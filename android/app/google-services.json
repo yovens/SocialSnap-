@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "415918460866",
+    "project_id": "socialsnap-30aef",
+    "storage_bucket": "socialsnap-30aef.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:415918460866:android:aa9730298693ed5948905b",
+        "android_client_info": {
+          "package_name": "com.example.social_snap"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyANVwRa-MsSDemCjWSXAN4BUQ-Gd5m7aFQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
