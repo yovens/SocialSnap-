@@ -5,6 +5,10 @@ import '../../providers/feed_provider.dart';
 import '../../models/post_model.dart';
 import '../../widgets/post_card.dart';
 import '../../widgets/story_circle.dart';
+import '../notifications/notifications_page.dart';
+import 'package:cloud_firestore/cloud_firestore.dart'; // Enpòtan pou FirebaseFirestore
+import 'package:firebase_auth/firebase_auth.dart';
+
 
 class FeedPage extends StatelessWidget {
   const FeedPage({super.key});
@@ -14,8 +18,7 @@ class FeedPage extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor:
-          isDark ? const Color(0xFF121212) : Colors.white,
+      backgroundColor: isDark ? const Color(0xFF121212) : Colors.white,
 
       body: SafeArea(
         bottom: false,
@@ -24,39 +27,13 @@ class FeedPage extends StatelessWidget {
 
             // APP BAR
             Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 20,
-                vertical: 12,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               child: Row(
                 children: [
 
-                  Container(
-                    width: 38,
-                    height: 38,
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? const Color(0xFF1E1E1E)
-                          : Colors.white,
-                      borderRadius:
-                          BorderRadius.circular(12),
-                      boxShadow: isDark
-                          ? []
-                          : [
-                              BoxShadow(
-                                color: Colors.black
-                                    .withOpacity(0.06),
-                                blurRadius: 8,
-                                offset: const Offset(0, 3),
-                              ),
-                            ],
-                    ),
-                    child: Icon(
-                      Icons.camera_alt_outlined,
-                      color: isDark
-                          ? Colors.white
-                          : Colors.black,
-                    ),
+                  Icon(
+                    Icons.camera_alt_outlined,
+                    color: isDark ? Colors.white : Colors.black,
                   ),
 
                   const Spacer(),
@@ -66,60 +43,49 @@ class FeedPage extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: isDark
-                          ? Colors.white
-                          : Colors.black,
+                      color: isDark ? Colors.white : Colors.black,
                     ),
                   ),
 
                   const Spacer(),
 
-                  Stack(
-                    children: [
-                      Container(
-                        width: 38,
-                        height: 38,
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? const Color(0xFF1E1E1E)
-                              : Colors.white,
-                          borderRadius:
-                              BorderRadius.circular(12),
-                          boxShadow: isDark
-                              ? []
-                              : [
-                                  BoxShadow(
-                                    color: Colors.black
-                                        .withOpacity(0.06),
-                                    blurRadius: 8,
-                                    offset:
-                                        const Offset(0, 3),
-                                  ),
-                                ],
-                        ),
-                        child: Icon(
-                          Icons.notifications_none,
-                          color: isDark
-                              ? Colors.white
-                              : Colors.black,
-                        ),
-                      ),
-
-                      Positioned(
-                        right: 6,
-                        top: 6,
-                        child: Container(
-                          width: 8,
-                          height: 8,
-                          decoration:
-                              const BoxDecoration(
-                            color: Colors.red,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                 Stack(
+  children: [
+    IconButton(
+      icon: const Icon(Icons.notifications),
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const NotificationsPage()),
+        );
+      },
+    ),
+    // Pwen wouj la parèt sèlman si gen notifikasyon
+    Positioned(
+      right: 8,
+      top: 8,
+      child: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection('notifications')
+            .where('receiverUid', isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
+            return Container(
+              padding: const EdgeInsets.all(4),
+              decoration: const BoxDecoration(
+                color: Colors.red,
+                shape: BoxShape.circle,
+              ),
+              constraints: const BoxConstraints(minWidth: 10, minHeight: 10),
+            );
+          }
+          return const SizedBox.shrink(); // Pa montre anyen si pa gen notifikasyon
+        },
+      ),
+    ),
+  ],
+)
                 ],
               ),
             ),
@@ -129,13 +95,9 @@ class FeedPage extends StatelessWidget {
               height: 95,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
-                padding:
-                    const EdgeInsets.only(left: 10),
                 itemCount: 8,
                 itemBuilder: (_, index) {
-                  return StoryCircle(
-                    username: "user$index",
-                  );
+                  return StoryCircle(username: "user$index");
                 },
               ),
             ),
@@ -147,53 +109,23 @@ class FeedPage extends StatelessWidget {
               child: Consumer<FeedProvider>(
                 builder: (_, provider, __) {
                   return StreamBuilder<List<PostModel>>(
-                    stream:
-                        provider.getPostsStream(),
+                    stream: provider.getPostsStream(),
                     builder: (context, snapshot) {
 
-                      if (snapshot.hasError) {
-                        return Center(
-                          child: Text(
-                            "Erreur : ${snapshot.error}",
-                          ),
-                        );
-                      }
-
-                      if (snapshot.connectionState ==
-                          ConnectionState.waiting) {
-                        return const Center(
-                          child:
-                              CircularProgressIndicator(),
-                        );
-                      }
-
-                      if (!snapshot.hasData ||
-                          snapshot.data!.isEmpty) {
-                        return Center(
-                          child: Text(
-                            "Aucun post disponible",
-                            style: TextStyle(
-                              color: isDark
-                                  ? Colors.white
-                                  : Colors.black,
-                            ),
-                          ),
-                        );
+                      if (!snapshot.hasData) {
+                        return const Center(child: CircularProgressIndicator());
                       }
 
                       final posts = snapshot.data!;
 
+                      if (posts.isEmpty) {
+                        return const Center(child: Text("Aucun post disponible"));
+                      }
+
                       return ListView.builder(
-                        padding:
-                            const EdgeInsets.only(
-                          bottom: 100,
-                        ),
                         itemCount: posts.length,
-                        itemBuilder:
-                            (context, index) {
-                          return PostCard(
-                            post: posts[index],
-                          );
+                        itemBuilder: (context, index) {
+                          return PostCard(post: posts[index]);
                         },
                       );
                     },

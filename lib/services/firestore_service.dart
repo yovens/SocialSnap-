@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+
 class FirestoreService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
@@ -79,39 +80,45 @@ Stream<QuerySnapshot> getPosts() {
   }
 
   // ───────────────── FOLLOW SYSTEM ─────────────────
-  Future<void> follow({
-    required String myUid,
-    required String targetUid,
-  }) async {
-    await _db.collection('users')
-        .doc(targetUid)
-        .collection('followers')
-        .doc(myUid)
-        .set({'createdAt': FieldValue.serverTimestamp()});
+     Future<void> follow({
+  required String myUid,
+  required String targetUid,
+}) async {
 
-    await _db.collection('users')
-        .doc(myUid)
-        .collection('following')
-        .doc(targetUid)
-        .set({'createdAt': FieldValue.serverTimestamp()});
-  }
+  await FirebaseFirestore.instance
+      .collection('users')
+      .doc(targetUid)
+      .collection('followers')
+      .doc(myUid)
+      .set({'createdAt': FieldValue.serverTimestamp()});
 
-  Future<void> unfollow({
-    required String myUid,
-    required String targetUid,
-  }) async {
-    await _db.collection('users')
-        .doc(targetUid)
-        .collection('followers')
-        .doc(myUid)
-        .delete();
+  await FirebaseFirestore.instance
+      .collection('users')
+      .doc(myUid)
+      .collection('following')
+      .doc(targetUid)
+      .set({'createdAt': FieldValue.serverTimestamp()});
+}
 
-    await _db.collection('users')
-        .doc(myUid)
-        .collection('following')
-        .doc(targetUid)
-        .delete();
-  }
+ Future<void> unfollow({
+  required String myUid,
+  required String targetUid,
+}) async {
+
+  await FirebaseFirestore.instance
+      .collection('users')
+      .doc(targetUid)
+      .collection('followers')
+      .doc(myUid)
+      .delete();
+
+  await FirebaseFirestore.instance
+      .collection('users')
+      .doc(myUid)
+      .collection('following')
+      .doc(targetUid)
+      .delete();
+}
 
   // ───────────────── NOTIFICATIONS ─────────────────
   Future<void> sendNotification({
@@ -149,4 +156,12 @@ Stream<QuerySnapshot> getPosts() {
         .doc(notificationId)
         .update({'isRead': isRead});
   }
+
+  Future<void> _clearAllNotifications(List<QueryDocumentSnapshot> docs) async {
+  final batch = FirebaseFirestore.instance.batch();
+  for (var doc in docs) {
+    batch.delete(doc.reference);
+  }
+  await batch.commit();
+}
 }
