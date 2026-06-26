@@ -219,22 +219,9 @@ class _ProfileHeaderState
      
 
         // STORY (Sèlman sou pwofil pa w)
-        if (widget.isMyProfile)
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: () {},
-              icon: const Icon(
-                Icons.add_circle,
-              ),
-              label: const Text(
-                "Ajouter une Story",
-              ),
-            ),
-          ),
+       
+            
 
-        if (widget.isMyProfile)
-          const SizedBox(height: 15),
 
         // BOUTONS
         widget.isMyProfile

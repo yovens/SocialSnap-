@@ -28,6 +28,7 @@ class _PostDetailsPageState extends State<PostDetailsPage> {
 
   String get postId => widget.post.postId;
 
+
   // ───────────────── LIKE ─────────────────
   Future<void> toggleLike() async {
     if (currentUser == null) return;
@@ -99,7 +100,38 @@ Future<void> addComment() async {
 
     return Scaffold(
       backgroundColor: dark ? const Color(0xFF121212) : Colors.white,
+            // ✅ AJOUTE APPBAR LA ISIT LA
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        iconTheme: IconThemeData(color: dark ? Colors.white : Colors.black),
+        actions: [
+          // Bouton efase (Sèlman pou pwopriyetè pòs la)
+          if (widget.post.uid == currentUser?.uid)
+            IconButton(
+              icon: const Icon(Icons.delete, color: Colors.red),
+              onPressed: () async {
+                bool? confirm = await showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text("Supprimer ?"),
+                    content: const Text("Voulez-vous supprimer ce post définitivement ?"),
+                    actions: [
+                      TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("Non")),
+                      TextButton(onPressed: () => Navigator.pop(context, true), child: const Text("Oui")),
+                    ],
+                  ),
+                );
 
+                if (confirm == true) {
+                  // ✅ ITILIZE SÈVIS LA POU NETWAYE DONE YO
+                  await _service.deletePost(postId); 
+                  if (mounted) Navigator.pop(context);
+                }
+              },
+            ),
+        ],
+      ),
       body: Column(
         children: [
 

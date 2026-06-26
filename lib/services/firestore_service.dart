@@ -4,6 +4,16 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class FirestoreService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
+
+// Fonksyon pou ajoute yon istwa (Story)
+  Future<void> addStory({required String uid, required String imageUrl}) async {
+    await _db.collection('stories').add({
+      'uid': uid,
+      'imageUrl': imageUrl,
+      'createdAt': FieldValue.serverTimestamp(),
+      'expiryDate': DateTime.now().add(const Duration(hours: 24)),
+    });
+  }
   // ───────────────── POSTS ─────────────────
   CollectionReference get posts => _db.collection('posts');
 
@@ -45,6 +55,19 @@ Stream<QuerySnapshot> getPosts() {
         .map((doc) => doc.exists);
   }
 
+// Nan lib/services/firestore_service.dart
+Future<void> deletePost(String postId) async {
+  final postRef = _db.collection('posts').doc(postId);
+  
+  // Efase kòmantè yo
+  final comments = await postRef.collection('comments').get();
+  for (var doc in comments.docs) { 
+    await doc.reference.delete();
+  }
+  
+  // Efase pòs la
+  await postRef.delete();
+}
   // ───────────────── COMMENTS ─────────────────
   Future<void> addComment({
     required String postId,
@@ -164,4 +187,6 @@ Stream<QuerySnapshot> getPosts() {
   }
   await batch.commit();
 }
+
+
 }
