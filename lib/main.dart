@@ -9,6 +9,7 @@ import 'providers/auth_provider.dart';
 import 'providers/theme_provider.dart';
 import 'providers/notification_provider.dart';
 import 'providers/feed_provider.dart';
+import 'providers/chat_provider.dart';
 
 // Screens
 import 'screens/auth/login_screen.dart';
@@ -37,7 +38,8 @@ class SocialSnapApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => AppAuthProvider()),
         ChangeNotifierProvider(create: (_) => FeedProvider()),
-
+        ChangeNotifierProvider(create: (_) => ChatProvider()),
+        
         ChangeNotifierProxyProvider<AppAuthProvider, NotificationProvider>(
           create: (context) => NotificationProvider(
             Provider.of<AppAuthProvider>(context, listen: false),

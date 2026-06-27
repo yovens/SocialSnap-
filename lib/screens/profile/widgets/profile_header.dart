@@ -3,6 +3,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../../../models/user_model.dart';
 import '../../../services/firestore_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:provider/provider.dart'; // Pou context.read ka mache
+import '../../../providers/chat_provider.dart'; // Pou ChatProvider ka mache (ajiste kantite '../' yo si sa nesesè)
+import '../../chat/chat_page.dart'; // Pou ChatPage ka mache (ajiste chemen an selon kote chat_page.dart ou ye)
+
 
 class ProfileHeader extends StatefulWidget {
   final UserModel user;
@@ -293,20 +297,52 @@ class _ProfileHeaderState
                   const SizedBox(width: 10),
 
                   Expanded(
-                    child:
-                        OutlinedButton.icon(
-                      onPressed: () {
+  child: OutlinedButton.icon(
+    onPressed: () async {
+      // 1. Rele ChatProvider a san l pa koute chanjman (listen: false)
+      final chatProvider = context.read<ChatProvider>();
+      
+      // 2. Jwenn UID moun ki mèt profile sa a
+      // (Ranplase 'widget.user.uid' ak varyab reyèl ou itilize pou UID lòt moun nan)
+      final String targetUserId = widget.user.uid; 
 
-                        // ouvrir chat
-                      },
-                      icon: const Icon(
-                        Icons.chat,
-                      ),
-                      label: const Text(
-                        "Message",
-                      ),
-                    ),
-                  ),
+      // Montre yon ti loading si kreyasyon an pran yon ti tan
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => const Center(child: CircularProgressIndicator(color: Colors.cyan)),
+      );
+
+      try {
+        // 3. Chache oswa kreye chanm chat la nan Firebase
+        String chatId = await chatProvider.getOrCreateChatRoom(targetUserId);
+
+        // Retire ti loading lan
+        if (context.mounted) Navigator.pop(context);
+
+        // 4. Si nou jwenn yon chatId valab, nou ouvri ChatPage la dirèkteman
+        if (chatId.isNotEmpty && context.mounted) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => ChatPage(chatId: chatId),
+            ),
+          );
+        }
+      } catch (e) {
+        // Retire ti loading lan si gen erè
+        if (context.mounted) {
+          Navigator.pop(context);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Erè: Enposib pou louvri chat la")),
+          );
+        }
+      }
+    },
+    icon: const Icon(Icons.chat),
+    label: const Text("Message"),
+  ),
+),
                 ],
               ),
       ],

@@ -7,6 +7,8 @@ import 'feed_page.dart';
 import '../create/add_post_page.dart';
 import '../profile/profile_page.dart';
 import '../../providers/theme_provider.dart';
+import '../chat/chats_page.dart';
+
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -24,13 +26,14 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final theme = Provider.of<ThemeProvider>(context);
 
+    
     final List<Widget> pages = [
-      const FeedPage(),
-      const Center(child: Text("Search")),
-      const SizedBox(),
-      const Center(child: Text("Chat")),
-      ProfilePage(uid: currentUid),
-    ];
+  const FeedPage(),
+  const Center(child: Text("Search")),
+  const SizedBox(),
+  const ChatsPage(),
+  ProfilePage(uid: currentUid),
+];
 
     return Scaffold(
       backgroundColor: theme.isDarkMode

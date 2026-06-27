@@ -117,9 +117,9 @@ class _PostCardState extends State<PostCard> {
                   ),
                 ),
 
-                subtitle: const Text("Just now"),
+                subtitle: const Text(""),
 
-                trailing: const Icon(Icons.more_horiz),
+                
               );
             },
           ),
