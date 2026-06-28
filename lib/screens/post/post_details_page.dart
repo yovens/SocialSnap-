@@ -37,12 +37,21 @@ class _PostDetailsPageState extends State<PostDetailsPage> {
 
     await _service.toggleLike(postId: postId, uid: uid);
 
+final currentUid = FirebaseAuth.instance.currentUser?.uid ?? '';
+if (currentUid.isNotEmpty) {
+  final userSnap = await FirebaseFirestore.instance.collection('users').doc(currentUid).get();
+  if (userSnap.exists && userSnap.data() != null) {
+    final userData = userSnap.data()!;
     await _service.sendNotification(
       receiverUid: widget.post.uid,
-      senderUid: uid,
-      type: "like",
-      postId: postId,
+      senderUid: currentUid,
+      senderName: userData['displayName'] ?? 'Quelqu\'un',
+      senderProfileImageUrl: userData['profileImageUrl'] ?? '',
+      type: 'like',
+      postId: widget.post.postId, // 👈 Nou itilize .postId
     );
+  }
+}
 
     setState(() => liked = !liked);
   }
@@ -78,12 +87,21 @@ Future<void> addComment() async {
   });
 
   // notification
-  await _service.sendNotification(
-    receiverUid: widget.post.uid,
-    senderUid: uid,
-    type: "comment",
-    postId: postId,
-  );
+ final currentUid = FirebaseAuth.instance.currentUser?.uid ?? '';
+if (currentUid.isNotEmpty) {
+  final userSnap = await FirebaseFirestore.instance.collection('users').doc(currentUid).get();
+  if (userSnap.exists && userSnap.data() != null) {
+    final userData = userSnap.data()!;
+    await _service.sendNotification(
+      receiverUid: widget.post.uid,
+      senderUid: currentUid,
+      senderName: userData['displayName'] ?? 'Quelqu\'un',
+      senderProfileImageUrl: userData['profileImageUrl'] ?? '',
+      type: 'comment',
+      postId: widget.post.postId, // 👈 Nou itilize .postId
+    );
+  }
+}
 
   _commentCtrl.clear();
 

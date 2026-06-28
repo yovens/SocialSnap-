@@ -143,24 +143,27 @@ Future<void> deletePost(String postId) async {
       .delete();
 }
 
-  // ───────────────── NOTIFICATIONS ─────────────────
+// ───────────────── NOTIFICATIONS ─────────────────
   Future<void> sendNotification({
     required String receiverUid,
     required String senderUid,
+    required String senderName,            // 🟢 AJOUTE: Non moun ki fè aksyon an
+    required String senderProfileImageUrl, // 🟢 AJOUTE: Foto pwofil moun lan
     required String type,
     String? postId,
   }) async {
     await _db.collection('notifications').add({
       'receiverUid': receiverUid,
       'senderUid': senderUid,
+      'senderName': senderName,                     // 🟢 Sove l nan Firestore
+      'senderProfileImageUrl': senderProfileImageUrl, // 🟢 Sove l nan Firestore
       'type': type,
       'postId': postId,
       'isRead': false,
-      'createdAt': FieldValue.serverTimestamp(),
+      'createdAt': FieldValue.serverTimestamp(), // 🔥 Sa a ap toujou bay bon jan lè egzat sèvè a!
     });
   }
 
- 
   Stream<QuerySnapshot> getNotifications(String uid) {
     return _db
         .collection('notifications')
@@ -181,12 +184,11 @@ Future<void> deletePost(String postId) async {
   }
 
   Future<void> _clearAllNotifications(List<QueryDocumentSnapshot> docs) async {
-  final batch = FirebaseFirestore.instance.batch();
-  for (var doc in docs) {
-    batch.delete(doc.reference);
+    final batch = FirebaseFirestore.instance.batch();
+    for (var doc in docs) {
+      batch.delete(doc.reference);
+    }
+    await batch.commit();
   }
-  await batch.commit();
-}
-
 
 }

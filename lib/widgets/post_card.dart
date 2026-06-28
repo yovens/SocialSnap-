@@ -28,12 +28,23 @@ class _PostCardState extends State<PostCard> {
       uid: uid,
     );
 
+   // 🟢 Ranplase kòd sendNotification anlè a ak sa a:
+final currentUid = FirebaseAuth.instance.currentUser?.uid ?? '';
+if (currentUid.isNotEmpty) {
+  final userSnap = await FirebaseFirestore.instance.collection('users').doc(currentUid).get();
+  if (userSnap.exists && userSnap.data() != null) {
+    final userData = userSnap.data()!;
+    
     await _service.sendNotification(
-      receiverUid: widget.post.uid,
-      senderUid: uid,
-      type: "like",
-      postId: widget.post.postId,
+      receiverUid: widget.post.uid, // oswa widget.post.authorUid daprè modèl ou
+      senderUid: currentUid,
+      senderName: userData['displayName'] ?? 'Quelqu\'un',
+      senderProfileImageUrl: userData['profileImageUrl'] ?? '',
+      type: 'like',
+      postId: widget.post.postId, // 👈 Nou chanje .id pou l vin .postId pou evite erè a
     );
+  }
+}
   }
 
   // ───────── OPEN POST DETAILS ─────────

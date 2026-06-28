@@ -69,13 +69,14 @@ class _ProfileHeaderState
       });
     }
   }
-
-  Future<void> _toggleFollow() async {
+Future<void> _toggleFollow() async {
+    // 1️⃣ Nou deklare currentUid anlè nèt pou tout moun anba ka wè l
+    final currentUid = FirebaseAuth.instance.currentUser?.uid ?? '';
+    if (currentUid.isEmpty) return; // Si itilizatè a pa konekte, nou kanpe sa
 
     if (isFollowing) {
-
       await _service.unfollow(
-        myUid: currentUid,
+        myUid: currentUid, // Kounye a l ap jwenn li pafè!
         targetUid: widget.user.uid,
       );
 
@@ -84,17 +85,23 @@ class _ProfileHeaderState
       });
 
     } else {
-
       await _service.follow(
-        myUid: currentUid,
+        myUid: currentUid, // Kounye a l ap jwenn li pafè tou!
         targetUid: widget.user.uid,
       );
 
-      await _service.sendNotification(
-        receiverUid: widget.user.uid,
-        senderUid: currentUid,
-        type: "follow",
-      );
+      // 2️⃣ Kounye a nou voye notifikasyon an depi se yon swiv ("follow")
+      final userSnap = await FirebaseFirestore.instance.collection('users').doc(currentUid).get();
+      if (userSnap.exists && userSnap.data() != null) {
+        final userData = userSnap.data()!;
+        await _service.sendNotification(
+          receiverUid: widget.user.uid,
+          senderUid: currentUid,
+          senderName: userData['displayName'] ?? 'Quelqu\'un',
+          senderProfileImageUrl: userData['profileImageUrl'] ?? '',
+          type: 'follow',
+        );
+      }
 
       setState(() {
         isFollowing = true;
