@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
+import 'package:image_picker/image_picker.dart';
 import '../../providers/chat_provider.dart';
 import '../../widgets/chat/message_bubble.dart';
 import '../../widgets/chat/message_input.dart';
@@ -247,26 +247,37 @@ class _ChatPageState extends State<ChatPage> {
           ),
 
           // ================= INPUT =================
-          MessageInput(
-            controller: controller,
-
-            onSend: () {
-              final text = controller.text.trim();
-
-              if (text.isNotEmpty) {
-                provider.sendMessage(
-                  chatId: widget.chatId,
-                  text: text,
-                );
-
-                controller.clear();
-              }
-            },
-
-            onImagePick: () async {
-              // 📷 futur: upload image Firebase Storage / ImgBB
-            },
-          ),
+       MessageInput(
+  controller: controller,
+  onSend: () {
+    final textToSend = controller.text.trim();
+    if (textToSend.isNotEmpty) {
+      provider.sendMessage(
+        chatId: widget.chatId,
+        text: textToSend,
+      );
+      controller.clear();
+    }
+  },
+  // ✅ KÒD KI POU OUVRI GALERI A TOUTBON VRE
+  onImagePick: () async {
+    final ImagePicker picker = ImagePicker();
+    // Ouvri galeri a pou itilizatè a chwazi yon foto
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+    
+    if (image != null) {
+      // Si l chwazi yon foto, voye l bay provider a pou l upload nan ImgBB / Firebase
+      // pa egzanp: await provider.sendImageMessage(widget.chatId, image.path);
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Foto chwazi: ${image.name}"),
+          backgroundColor: Colors.cyan,
+        ),
+      );
+    }
+  },
+),
         ],
       ),
     );

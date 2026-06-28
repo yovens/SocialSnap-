@@ -178,7 +178,7 @@ class _ProfileHeaderState
         const SizedBox(height: 20),
 
         // STATS
-       Container(
+   Container(
   padding: const EdgeInsets.all(18),
   decoration: BoxDecoration(
     color: dark ? const Color(0xFF1A1A1A) : Colors.white,
@@ -228,125 +228,194 @@ class _ProfileHeaderState
 
 
         // BOUTONS
-        widget.isMyProfile
-
-            ? Row(
-                children: [
-
-                  Expanded(
-                    child:
-                        ElevatedButton.icon(
-                      onPressed:
-                          widget.onEdit,
-                      icon: const Icon(
-                        Icons.edit,
-                      ),
-                      label: const Text(
-                        "Modifier Profil",
-                      ),
-                    ),
+  widget.isMyProfile
+    ? Row(
+        children: [
+          // 🟢 BOTON EDITE PROFIL (CYAN FLUO AK EKLA)
+          Expanded(
+            child: GestureDetector(
+              onTap: widget.onEdit,
+              child: Container(
+                height: 44,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF00E5FF), Color(0xFF00B0FF)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-
-                  const SizedBox(width: 10),
-
-                  Container(
-                    decoration: BoxDecoration(
-                      borderRadius:
-                          BorderRadius
-                              .circular(
-                        14,
-                      ),
-                      color: dark
-                          ? Colors.white10
-                          : Colors
-                              .grey
-                              .shade200,
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF00E5FF).withOpacity(0.4),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
                     ),
-                    child: IconButton(
-                      icon: const Icon(
-                        Icons.settings,
-                      ),
-                      onPressed:
-                          widget.onSettings,
-                    ),
-                  ),
-                ],
-              )
-
-            : Row(
-                children: [
-
-                  Expanded(
-                    child:
-                        ElevatedButton.icon(
-                      onPressed:
-                          _toggleFollow,
-                      icon: Icon(
-                        isFollowing
-                            ? Icons.check
-                            : Icons.person_add,
-                      ),
-                      label: Text(
-                        isFollowing
-                            ? "Suivi"
-                            : "Suivre",
+                  ],
+                ),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.edit, color: Colors.white, size: 18),
+                    SizedBox(width: 8),
+                    Text(
+                      "EDITE PROFIL",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                        letterSpacing: 0.5,
                       ),
                     ),
-                  ),
-
-                  const SizedBox(width: 10),
-
-                  Expanded(
-  child: OutlinedButton.icon(
-    onPressed: () async {
-      // 1. Rele ChatProvider a san l pa koute chanjman (listen: false)
-      final chatProvider = context.read<ChatProvider>();
-      
-      // 2. Jwenn UID moun ki mèt profile sa a
-      // (Ranplase 'widget.user.uid' ak varyab reyèl ou itilize pou UID lòt moun nan)
-      final String targetUserId = widget.user.uid; 
-
-      // Montre yon ti loading si kreyasyon an pran yon ti tan
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (_) => const Center(child: CircularProgressIndicator(color: Colors.cyan)),
-      );
-
-      try {
-        // 3. Chache oswa kreye chanm chat la nan Firebase
-        String chatId = await chatProvider.getOrCreateChatRoom(targetUserId);
-
-        // Retire ti loading lan
-        if (context.mounted) Navigator.pop(context);
-
-        // 4. Si nou jwenn yon chatId valab, nou ouvri ChatPage la dirèkteman
-        if (chatId.isNotEmpty && context.mounted) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => ChatPage(chatId: chatId),
-            ),
-          );
-        }
-      } catch (e) {
-        // Retire ti loading lan si gen erè
-        if (context.mounted) {
-          Navigator.pop(context);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Erè: Enposib pou louvri chat la")),
-          );
-        }
-      }
-    },
-    icon: const Icon(Icons.chat),
-    label: const Text("Message"),
-  ),
-),
-                ],
+                  ],
+                ),
               ),
-      ],
-    );
+            ),
+          ),
+          const SizedBox(width: 10),
+          // ⚙️ BOTON PARAMÈT (KIKO DESIGN)
+          GestureDetector(
+            onTap: widget.onSettings,
+            child: Container(
+              height: 44,
+              width: 44,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(14),
+                color: dark ? const Color(0xFF1E1E1E) : Colors.grey.shade100,
+                border: Border.all(
+                  color: dark ? Colors.white10 : Colors.black12,
+                  width: 1,
+                ),
+              ),
+              child: Icon(
+                Icons.settings,
+                color: dark ? Colors.white70 : Colors.black54,
+                size: 20,
+              ),
+            ),
+          ),
+        ],
+      )
+    : Row(
+        children: [
+          // 🟢 BOTON SUIVRE / SUIVI (CYAN FLUO AK EKLA)
+          Expanded(
+            child: GestureDetector(
+              onTap: _toggleFollow,
+              child: Container(
+                height: 44,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF00E5FF), Color(0xFF00B0FF)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF00E5FF).withOpacity(0.4),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      isFollowing ? Icons.check : Icons.person_add,
+                      color: Colors.white,
+                      size: 18,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      isFollowing ? "SUIVI" : "SUIVRE",
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          // 💬 BOTON MESSAGE (KIKO DESIGN - OUVRI CHAT)
+          Expanded(
+            child: GestureDetector(
+              onTap: () async {
+                final chatProvider = context.read<ChatProvider>();
+                final String targetUserId = widget.user.uid; 
+
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (_) => const Center(
+                    child: CircularProgressIndicator(color: Color(0xFF00E5FF)),
+                  ),
+                );
+
+                try {
+                  String chatId = await chatProvider.getOrCreateChatRoom(targetUserId);
+                  if (context.mounted) Navigator.pop(context);
+
+                  if (chatId.isNotEmpty && context.mounted) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ChatPage(chatId: chatId),
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Erè: Enposib pou louvri chat la")),
+                    );
+                  }
+                }
+              },
+              child: Container(
+                height: 44,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(14),
+                  color: dark ? const Color(0xFF1E1E1E) : Colors.white,
+                  border: Border.all(
+                    color: dark ? Colors.white10 : Colors.black12,
+                    width: 1,
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.chat_bubble_outline_rounded,
+                     color: dark ? Colors.white70 : Colors.black54,
+                      size: 18,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      "MESSAGE",
+                      style: TextStyle(
+                        color: dark ? Colors.white.withOpacity(0.87) : Colors.black87,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                        letterSpacing: 0.5,
+                   ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ), 
+
+  ], 
+);
   }
 }
 class _StatStream extends StatelessWidget {
