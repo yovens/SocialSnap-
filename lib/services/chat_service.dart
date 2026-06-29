@@ -162,6 +162,7 @@ class ChatService {
       "lastSenderId": currentUid,
       "lastMessageTime": FieldValue.serverTimestamp(),
       "unreadCount": unread,
+      "isRead": false,
     });
 
     await batch.commit();

@@ -174,7 +174,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  "Il y a quelques instants",
+                                  "",
                                   style: TextStyle(
                                     color: isDarkMode ? Colors.white60 : Colors.black54,
                                     fontSize: 11,

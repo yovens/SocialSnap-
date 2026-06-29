@@ -161,13 +161,7 @@ class _ChatPageState extends State<ChatPage> {
                       ),
                     ),
                     const SizedBox(height: 2),
-                    Text(
-                      enLigne ? "en ligne" : "hors ligne",
-                      style: TextStyle(
-                        color: enLigne ? Colors.cyan : Colors.grey,
-                        fontSize: 11,
-                      ),
-                    ),
+                   
                   ],
                 ),
               ],

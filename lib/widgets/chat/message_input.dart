@@ -67,7 +67,7 @@ class MessageInput extends StatelessWidget {
                     fontSize: 15,
                   ),
                   decoration: const InputDecoration(
-                    hintText: "Kòmanse pale...",
+                    hintText: "Écrire un message...",
                     hintStyle: TextStyle(color: Colors.grey, fontSize: 15),
                     border: InputBorder.none,
                     isDense: true,
