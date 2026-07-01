@@ -1,16 +1,37 @@
-# social_snap
+# SocialSnap
 
-A new Flutter project.
+![Flutter](https://img.shields.io/badge/Flutter-02569B?style=for-the-badge&logo=flutter&logoColor=white)
+![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)
 
-## Getting Started
+## Description
+SocialSnap est une application de réseau social moderne développée avec Flutter. Elle se concentre sur une interface utilisateur épurée utilisant le "Glassmorphism" et une palette de couleurs chaleureuses. L'application permet aux utilisateurs de partager des moments, d'interagir avec la communauté et de gérer leur profil.
 
-This project is a starting point for a Flutter application.
+## Fonctionnalités
+- **Authentification sécurisée** (Firebase Auth).
+- **Fil d'actualité (Feed)** avec navigation rapide.
+- **Gestion de profil utilisateur** (Firestore).
+- **Interface responsive** et moderne.
 
-A few resources to get you started if this is your first Flutter project:
+## Captures d'écran
+| Connexion | Feed | Profil |
+| :---: | :---: | :---: |
+| ![Login](path/to/login.png) | ![Feed](path/to/feed.png) | ![Profile](path/to/profile.png) |
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## Documentation
+- [Cahier des charges](docs/cahier_des_charges.pdf)
+- [Lien Figma](docs/design.md)
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Installation Firebase
+1. Créez un projet sur la [Console Firebase](https://console.firebase.google.com/).
+2. Ajoutez votre application Android/iOS.
+3. Téléchargez le fichier de configuration (`google-services.json` pour Android ou `GoogleService-Info.plist` pour iOS).
+4. Placez-les dans les dossiers respectifs (`android/app/` et `ios/Runner/`).
+   *Note : Ces fichiers sont ignorés par Git pour des raisons de sécurité.*
+
+## Membres de l'équipe
+
+| Membre | Responsabilité | Rôle |
+| :--- | :--- | :--- |
+| **Jocelyn Youvens Dions** | Développement Flutter / Firebase | Développement Front-End & Back-End |
+| **Faustin Mardoche** | Design UI/UX | Conception des maquettes et identité visuelle |
+| **Eserve Wondy** | Rédaction du Cahier des Charges | Structuration et validation du CDC |
