@@ -5,7 +5,7 @@ Ce document contient les ressources de conception graphique et l'interface utili
 ## 1. Prototype Figma
 Le prototype interactif est accessible via le lien ci-dessous :
 
-[🔗 Accéder au prototype Figma](LIEN_FIGMA_OU_ISIT)
+[🔗 Accéder au prototype Figma](https://canva.link/u197xwtumwxdgga)
 
 ## 2. Charte Graphique
 Le design de l'application repose sur les principes suivants :
