@@ -18,7 +18,7 @@ SocialSnap est une application de réseau social moderne développée avec Flutt
 | ![Login](path/to/login.png) | ![Feed](path/to/feed.png) | ![Profile](path/to/profile.png) |
 
 ## Documentation
-- [Cahier des charges](docs/cahier_des_charges.pdf)
+- [Cahier des charges](docs/SocialSnap_CDC Juillet 2026 FINAL.pdf)
 - [Lien Figma](docs/design.md)
 
 ## Installation Firebase
