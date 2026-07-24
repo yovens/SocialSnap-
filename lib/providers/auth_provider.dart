@@ -17,21 +17,68 @@ class AppAuthProvider with ChangeNotifier {
   bool get isAuthenticated => _user != null;
 
   // Enskripsyon
-  Future<String?> register(String email, String password) async {
-    _isLoading = true;
+Future<String?> register(String email, String password) async {
+  _isLoading = true;
+  notifyListeners();
+
+  try {
+    await _authService.signUp(email, password);
+
+    _isLoading = false;
     notifyListeners();
-    try {
-      await _authService.signUp(email, password);
-      _isLoading = false;
-      notifyListeners();
-      return null;
-    } catch (e) {
-      _isLoading = false;
-      notifyListeners();
-      return "Erè enskripsyon: ${e.toString()}";
+
+    return null;
+  } on FirebaseAuthException catch (e) {
+    _isLoading = false;
+    notifyListeners();
+
+    switch (e.code) {
+      case 'email-already-in-use':
+        return "Cette adresse e-mail est déjà utilisée.";
+
+      case 'invalid-email':
+        return "Adresse e-mail invalide.";
+
+      case 'weak-password':
+        return "Le mot de passe doit contenir au moins 6 caractères.";
+
+      case 'network-request-failed':
+        return "Vérifiez votre connexion Internet.";
+
+      default:
+        return e.message ?? "Une erreur est survenue.";
     }
+  } catch (_) {
+    _isLoading = false;
+    notifyListeners();
+    return "Une erreur est survenue.";
+  }
+}
+
+
+// 🔑 Fonksyon pou voye e-mail reset password
+Future<String?> sendPasswordResetEmail(String email) async {
+  if (email.trim().isEmpty) {
+    return "Veuillez entrer votre adresse e-mail.";
   }
 
+  try {
+    // RANPLASE _firebaseAuth KOTE SA A AK FirebaseAuth.instance
+    await FirebaseAuth.instance.sendPasswordResetEmail(email: email.trim());
+    return null; // Siksè, pa gen erè
+  } on FirebaseAuthException catch (e) {
+    switch (e.code) {
+      case 'user-not-found':
+        return "Aucun utilisateur trouvé avec cette adresse e-mail.";
+      case 'invalid-email':
+        return "L'adresse e-mail n'est pas valide.";
+      default:
+        return e.message ?? "Une erreur est survenue.";
+    }
+  } catch (e) {
+    return "Une erreur inattendue est survenue.";
+  }
+}
   // Koneksyon
   Future<String?> login(String email, String password) async {
     _isLoading = true;

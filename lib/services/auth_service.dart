@@ -3,34 +3,46 @@ import 'package:firebase_auth/firebase_auth.dart';
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  // Enskripsyon ak voye imèl konfimasyon
+  // ==========================
+  // Inscription
+  // ==========================
   Future<User?> signUp(String email, String password) async {
     try {
-      UserCredential result = await _auth.createUserWithEmailAndPassword(
-        email: email, 
-        password: password
+      UserCredential result =
+          await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
       );
-      // Voye imèl konfimasyon an fransè
-      await result.user!.sendEmailVerification();
+
+      await result.user?.sendEmailVerification();
+
       return result.user;
-    } catch (e) {
-      throw Exception("Erreur lors de l'inscription : ${e.toString()}");
+    } on FirebaseAuthException {
+      // Enpòtan: remonte erè Firebase a san modifye li
+      rethrow;
     }
   }
 
-  // Koneksyon
+  // ==========================
+  // Connexion
+  // ==========================
   Future<User?> signIn(String email, String password) async {
     try {
-      UserCredential result = await _auth.signInWithEmailAndPassword(
-        email: email, 
-        password: password
+      UserCredential result =
+          await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
       );
+
       return result.user;
-    } catch (e) {
-      throw Exception("Erreur de connexion : ${e.toString()}");
+    } on FirebaseAuthException {
+      rethrow;
     }
   }
 
+  // ==========================
+  // Déconnexion
+  // ==========================
   Future<void> signOut() async {
     await _auth.signOut();
   }

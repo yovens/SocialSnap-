@@ -22,13 +22,57 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
+  bool _isChecking = false;
+
+  @override
+  void dispose() {
+    _usernameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
+  }
+
+  void _showSnackBar(String message, {bool isError = true}) {
+    if (!mounted) return;
+
+    // Efface les anciens SnackBars pour afficher le nouveau immédiatement
+    ScaffoldMessenger.of(context).clearSnackBars();
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(
+              isError ? Icons.error_outline : Icons.check_circle_outline,
+              color: Colors.white,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                message,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: isError ? Colors.redAccent : Colors.green,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(16),
+        duration: Duration(seconds: isError ? 4 : 2),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AppAuthProvider>(context);
 
     return Scaffold(
       body: Container(
-        // Menm dégradé background ak LoginScreen
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [
@@ -45,7 +89,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-
                 /// ================= APP NAME =================
                 const Text(
                   "SocialSnap",
@@ -65,7 +108,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       const Text(
                         "CRÉER UN COMPTE",
                         style: TextStyle(
-                          fontSize: 20, // Harmonisé ak login lan
+                          fontSize: 20,
                           fontWeight: FontWeight.bold,
                           color: Color(0xFF1A1A2E),
                         ),
@@ -74,11 +117,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       const Text(
                         "Rejoignez la communauté SocialSnap",
                         style: TextStyle(
-                          color: Color(0xFF8A8A8E), 
+                          color: Color(0xFF8A8A8E),
                           fontSize: 13,
                         ),
                       ),
-                      
+
                       const SizedBox(height: 25),
 
                       /// PSEUDONYME
@@ -88,9 +131,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         hint: "Choisissez un pseudo",
                         icon: Icons.person_outline,
                       ),
-                      
+
                       const SizedBox(height: 15),
-                      
+
                       /// ADRESSE E-MAIL
                       CustomTextField(
                         controller: _emailController,
@@ -99,9 +142,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         icon: Icons.email_outlined,
                         keyboardType: TextInputType.emailAddress,
                       ),
-                      
+
                       const SizedBox(height: 15),
-                      
+
                       /// MOT DE PASSE
                       CustomTextField(
                         controller: _passwordController,
@@ -110,9 +153,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         icon: Icons.lock_outline,
                         obscureText: true,
                       ),
-                      
+
                       const SizedBox(height: 15),
-                      
+
                       /// CONFIRMER LE MOT DE PASSE
                       CustomTextField(
                         controller: _confirmPasswordController,
@@ -124,58 +167,133 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                       const SizedBox(height: 25),
 
-                      /// ================= REGISTER BUTTON (Lojik orijinal ou) =================
-                      authProvider.isLoading
-                          ? const CircularProgressIndicator(color: Color(0xFF22E1D0))
+                      /// ================= REGISTER BUTTON =================
+                      (authProvider.isLoading || _isChecking)
+                          ? const CircularProgressIndicator(
+                              color: Color(0xFF22E1D0),
+                            )
                           : GlowButton(
                               label: "S'INSCRIRE",
                               onPressed: () async {
-                                // Lojik verifikasyon ak kreyasyon ou an nèt san chanjman
-                                if (_passwordController.text != _confirmPasswordController.text) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text("Les mots de passe ne correspondent pas")),
-                                  );
+                                final username = _usernameController.text.trim();
+                                final email = _emailController.text.trim();
+                                final password = _passwordController.text;
+                                final confirmPassword =
+                                    _confirmPasswordController.text;
+
+                                // 1️⃣ Verifikasyon Chan yo
+                                if (username.isEmpty ||
+                                    email.isEmpty ||
+                                    password.isEmpty) {
+                                  _showSnackBar(
+                                      "Veuillez remplir tous les champs.");
                                   return;
                                 }
 
-                                String? error = await authProvider.register(
-                                    _emailController.text, _passwordController.text);
-                                
-                                if (error == null) {
-                                  try {
-                                    String uid = FirebaseAuth.instance.currentUser!.uid;
-                                    await FirebaseFirestore.instance.collection('users').doc(uid).set({
-                                      'uid': uid,
-                                      'displayName': _usernameController.text,
-                                      'username': _usernameController.text,
-                                      'profileImageUrl': 'https://static.vecteezy.com/system/resources/previews/009/292/244/original/default-avatar-icon-of-social-media-user-vector.jpg',
-                                      'bio': 'Byenveni sou profil mwen!',
-                                      'followersCount': 0,
-                                      'followingCount': 0,
-                                    });
-                                    context.go('/home');
-                                  } catch (e) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(content: Text("Erreur lors de la création du profil: $e")),
-                                    );
+                                if (password != confirmPassword) {
+                                  _showSnackBar(
+                                      "Les mots de passe ne correspondent pas.");
+                                  return;
+                                }
+
+                                if (!mounted) return;
+                                setState(() => _isChecking = true);
+
+                                try {
+                                  // 2️⃣ Tcheke Si Pseudo Egziste Deja nan Firestore
+                                  final usernameQuery = await FirebaseFirestore
+                                      .instance
+                                      .collection('users')
+                                      .where('username', isEqualTo: username)
+                                      .limit(1)
+                                      .get();
+
+                                  if (usernameQuery.docs.isNotEmpty) {
+                                    if (!mounted) return;
+                                    setState(() => _isChecking = false);
+                                    _showSnackBar(
+                                        "Ce pseudonyme est déjà pris.");
+                                    return;
                                   }
-                                } else {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text(error)),
+
+                                  // 3️⃣ Enskripsyon ak Firebase Auth
+                                  String? error = await authProvider.register(
+                                      email, password);
+
+                                  // 🔴 SI EMAIL LA GENYEN L DEJA OUSWA ERÈ FIREBASE
+                                  if (error != null) {
+                                    if (!mounted) return;
+                                    setState(() => _isChecking = false);
+                                    _showSnackBar(error);
+                                    return;
+                                  }
+
+                                  // 4️⃣ Kreyasyon Dokiman Profil nan Firestore
+                                  final currentUser =
+                                      FirebaseAuth.instance.currentUser;
+                                  if (currentUser == null) {
+                                    if (!mounted) return;
+                                    setState(() => _isChecking = false);
+                                    _showSnackBar(
+                                        "Erreur lors de la récupération de l'utilisateur.");
+                                    return;
+                                  }
+
+                                  final uid = currentUser.uid;
+
+                                  await FirebaseFirestore.instance
+                                      .collection('users')
+                                      .doc(uid)
+                                      .set({
+                                    'uid': uid,
+                                    'displayName': username,
+                                    'username': username,
+                                    'email': email,
+                                    'profileImageUrl':
+                                        'https://static.vecteezy.com/system/resources/previews/009/292/244/original/default-avatar-icon-of-social-media-user-vector.jpg',
+                                    'bio': 'Bienvenue sur mon profil !',
+                                    'followersCount': 0,
+                                    'followingCount': 0,
+                                    'createdAt': FieldValue.serverTimestamp(),
+                                  });
+
+                                  // 5️⃣ Dekonekte l pou l ka al valide email li anvan l conecte
+                                  await FirebaseAuth.instance.signOut();
+
+                                  if (!mounted) return;
+                                  setState(() => _isChecking = false);
+
+                                  // 🟢 MESAJ SIKSÈ
+                                  _showSnackBar(
+                                    "Compte créé ! Veuillez vérifier votre e-mail avant de vous connecter.",
+                                    isError: false,
                                   );
+
+                                  // ⏳ Poz pou moun lan gen tan wè mesaj la
+                                  await Future.delayed(
+                                      const Duration(seconds: 2));
+
+                                  // 6️⃣ Redireksyon sou Login Page
+                                  if (mounted) {
+                                    context.go('/login');
+                                  }
+                                } catch (e) {
+                                  if (!mounted) return;
+                                  setState(() => _isChecking = false);
+                                  _showSnackBar("Une erreur est survenue: $e");
                                 }
                               },
                             ),
 
                       const SizedBox(height: 14),
-                      
+
                       /// ================= TEXT BUTTON =================
                       TextButton(
                         onPressed: () => context.pop(),
                         child: const Text(
                           "Déjà un compte ? Se connecter",
                           style: TextStyle(
-                            color: Color(0xFF8A8A8E), 
+                            color: Color(0xFF8A8A8E),
                             fontSize: 13,
                           ),
                         ),
