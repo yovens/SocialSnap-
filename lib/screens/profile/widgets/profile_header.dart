@@ -1,49 +1,45 @@
-import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import '../../../models/user_model.dart';
-import '../../../services/firestore_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:provider/provider.dart'; // Pou context.read ka mache
-import '../../../providers/chat_provider.dart'; // Pou ChatProvider ka mache (ajiste kantite '../' yo si sa nesesè)
-import '../../chat/chat_page.dart'; // Pou ChatPage ka mache (ajiste chemen an selon kote chat_page.dart ou ye)
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../../../models/user_model.dart';
+import '../../../providers/chat_provider.dart';
+import '../../../services/firestore_service.dart';
+import '../../chat/chat_page.dart';
 
 class ProfileHeader extends StatefulWidget {
   final UserModel user;
   final int postsCount;
-
   final bool isMyProfile;
-
   final VoidCallback? onEdit;
   final VoidCallback? onSettings;
 
-  
+  /// 🟢 NOUVO CALLBACKS POU OUVRI LIS YO
+  final VoidCallback? onFollowersTap;
+  final VoidCallback? onFollowingTap;
 
   const ProfileHeader({
-  super.key,
-  required this.user,
-  required this.postsCount,
-  required this.isMyProfile,
-  this.onEdit,
-  this.onSettings,
-});
+    super.key,
+    required this.user,
+    required this.postsCount,
+    required this.isMyProfile,
+    this.onEdit,
+    this.onSettings,
+    this.onFollowersTap,
+    this.onFollowingTap,
+  });
 
   @override
-  State<ProfileHeader> createState() =>
-      _ProfileHeaderState();
+  State<ProfileHeader> createState() => _ProfileHeaderState();
 }
 
-class _ProfileHeaderState
-    extends State<ProfileHeader> {
-
-  final FirestoreService _service =
-      FirestoreService();
-
+class _ProfileHeaderState extends State<ProfileHeader> {
+  final FirestoreService _service = FirestoreService();
   bool isFollowing = false;
 
   String get currentUid =>
-      FirebaseAuth.instance.currentUser?.uid ??
-      "";
+      FirebaseAuth.instance.currentUser?.uid ?? "";
 
   @override
   void initState() {
@@ -52,11 +48,9 @@ class _ProfileHeaderState
   }
 
   Future<void> _checkFollowStatus() async {
-
     if (widget.isMyProfile) return;
 
-    final doc = await FirebaseFirestore
-        .instance
+    final doc = await FirebaseFirestore.instance
         .collection('users')
         .doc(widget.user.uid)
         .collection('followers')
@@ -69,29 +63,31 @@ class _ProfileHeaderState
       });
     }
   }
-Future<void> _toggleFollow() async {
-    // 1️⃣ Nou deklare currentUid anlè nèt pou tout moun anba ka wè l
+
+  Future<void> _toggleFollow() async {
     final currentUid = FirebaseAuth.instance.currentUser?.uid ?? '';
-    if (currentUid.isEmpty) return; // Si itilizatè a pa konekte, nou kanpe sa
+    if (currentUid.isEmpty) return;
 
     if (isFollowing) {
       await _service.unfollow(
-        myUid: currentUid, // Kounye a l ap jwenn li pafè!
+        myUid: currentUid,
         targetUid: widget.user.uid,
       );
 
       setState(() {
         isFollowing = false;
       });
-
     } else {
       await _service.follow(
-        myUid: currentUid, // Kounye a l ap jwenn li pafè tou!
+        myUid: currentUid,
         targetUid: widget.user.uid,
       );
 
-      // 2️⃣ Kounye a nou voye notifikasyon an depi se yon swiv ("follow")
-      final userSnap = await FirebaseFirestore.instance.collection('users').doc(currentUid).get();
+      final userSnap = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(currentUid)
+          .get();
+
       if (userSnap.exists && userSnap.data() != null) {
         final userData = userSnap.data()!;
         await _service.sendNotification(
@@ -111,19 +107,14 @@ Future<void> _toggleFollow() async {
 
   @override
   Widget build(BuildContext context) {
-
-    final dark =
-        Theme.of(context).brightness ==
-            Brightness.dark;
+    final dark = Theme.of(context).brightness == Brightness.dark;
 
     return Column(
       children: [
-
         // PHOTO PROFIL
         Stack(
           alignment: Alignment.center,
           children: [
-
             Container(
               width: 120,
               height: 120,
@@ -131,20 +122,16 @@ Future<void> _toggleFollow() async {
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(
-                      0xFF00F0FF,
-                    ).withOpacity(0.5),
+                    color: const Color(0xFF00F0FF).withOpacity(0.5),
                     blurRadius: 35,
                     spreadRadius: 3,
                   ),
                 ],
               ),
             ),
-
             CircleAvatar(
               radius: 55,
-              backgroundImage:
-                  NetworkImage(
+              backgroundImage: NetworkImage(
                 widget.user.profileImageUrl,
               ),
             ),
@@ -158,9 +145,7 @@ Future<void> _toggleFollow() async {
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
-            color: dark
-                ? Colors.white
-                : Colors.black,
+            color: dark ? Colors.white : Colors.black,
           ),
         ),
 
@@ -169,9 +154,7 @@ Future<void> _toggleFollow() async {
         Text(
           "@${widget.user.username}",
           style: TextStyle(
-            color: dark
-                ? Colors.white60
-                : Colors.black54,
+            color: dark ? Colors.white60 : Colors.black54,
           ),
         ),
 
@@ -185,246 +168,257 @@ Future<void> _toggleFollow() async {
         const SizedBox(height: 20),
 
         // STATS
-   Container(
-  padding: const EdgeInsets.all(18),
-  decoration: BoxDecoration(
-    color: dark ? const Color(0xFF1A1A1A) : Colors.white,
-    borderRadius: BorderRadius.circular(22),
-  ),
-  child: Row(
-    mainAxisAlignment: MainAxisAlignment.spaceAround,
-    children: [
-
-      _StatStream(
-        title: "Posts",
-        stream: FirebaseFirestore.instance
-            .collection('posts')
-            .where('uid', isEqualTo: widget.user.uid)
-            .snapshots(),
-      ),
-
-      _StatStream(
-        title: "Followers",
-        stream: FirebaseFirestore.instance
-            .collection('users')
-            .doc(widget.user.uid)
-            .collection('followers')
-            .snapshots(),
-      ),
-
-      _StatStream(
-        title: "Following",
-        stream: FirebaseFirestore.instance
-            .collection('users')
-            .doc(widget.user.uid)
-            .collection('following')
-            .snapshots(),
-      ),
-    ],
-  ),
-),
-
-        const SizedBox(height: 20),
-
-
-     
-
-        // STORY (Sèlman sou pwofil pa w)
-       
-            
-
-
-        // BOUTONS
-  widget.isMyProfile
-    ? Row(
-        children: [
-          // 🟢 BOTON EDITE PROFIL (CYAN FLUO AK EKLA)
-          Expanded(
-            child: GestureDetector(
-              onTap: widget.onEdit,
-              child: Container(
-                height: 44,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF00E5FF), Color(0xFF00B0FF)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(14),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF00E5FF).withOpacity(0.4),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.edit, color: Colors.white, size: 18),
-                    SizedBox(width: 8),
-                    Text(
-                      "EDITE PROFIL",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+        Container(
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: dark ? const Color(0xFF1A1A1A) : Colors.white,
+            borderRadius: BorderRadius.circular(22),
           ),
-          const SizedBox(width: 10),
-          // ⚙️ BOTON PARAMÈT (KIKO DESIGN)
-          GestureDetector(
-            onTap: widget.onSettings,
-            child: Container(
-              height: 44,
-              width: 44,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(14),
-                color: dark ? const Color(0xFF1E1E1E) : Colors.grey.shade100,
-                border: Border.all(
-                  color: dark ? Colors.white10 : Colors.black12,
-                  width: 1,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              // POSTS (Pa klikab)
+              _StatStream(
+                title: "Posts",
+                stream: FirebaseFirestore.instance
+                    .collection('posts')
+                    .where('uid', isEqualTo: widget.user.uid)
+                    .snapshots(),
+              ),
+
+              // 🟢 FOLLOWERS (Klikab)
+              InkWell(
+                onTap: widget.onFollowersTap,
+                borderRadius: BorderRadius.circular(10),
+                child: _StatStream(
+                  title: "Followers",
+                  stream: FirebaseFirestore.instance
+                      .collection('users')
+                      .doc(widget.user.uid)
+                      .collection('followers')
+                      .snapshots(),
                 ),
               ),
-              child: Icon(
-                Icons.settings,
-                color: dark ? Colors.white70 : Colors.black54,
-                size: 20,
-              ),
-            ),
-          ),
-        ],
-      )
-    : Row(
-        children: [
-          // 🟢 BOTON SUIVRE / SUIVI (CYAN FLUO AK EKLA)
-          Expanded(
-            child: GestureDetector(
-              onTap: _toggleFollow,
-              child: Container(
-                height: 44,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF00E5FF), Color(0xFF00B0FF)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(14),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF00E5FF).withOpacity(0.4),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      isFollowing ? Icons.check : Icons.person_add,
-                      color: Colors.white,
-                      size: 18,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      isFollowing ? "SUIVI" : "SUIVRE",
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 10),
-          // 💬 BOTON MESSAGE (KIKO DESIGN - OUVRI CHAT)
-          Expanded(
-            child: GestureDetector(
-              onTap: () async {
-                final chatProvider = context.read<ChatProvider>();
-                final String targetUserId = widget.user.uid; 
 
-                showDialog(
-                  context: context,
-                  barrierDismissible: false,
-                  builder: (_) => const Center(
-                    child: CircularProgressIndicator(color: Color(0xFF00E5FF)),
-                  ),
-                );
-
-                try {
-                  String chatId = await chatProvider.getOrCreateChatRoom(targetUserId);
-                  if (context.mounted) Navigator.pop(context);
-
-                  if (chatId.isNotEmpty && context.mounted) {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => ChatPage(chatId: chatId),
-                      ),
-                    );
-                  }
-                } catch (e) {
-                  if (context.mounted) {
-                    Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Erè: Enposib pou louvri chat la")),
-                    );
-                  }
-                }
-              },
-              child: Container(
-                height: 44,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(14),
-                  color: dark ? const Color(0xFF1E1E1E) : Colors.white,
-                  border: Border.all(
-                    color: dark ? Colors.white10 : Colors.black12,
-                    width: 1,
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.chat_bubble_outline_rounded,
-                     color: dark ? Colors.white70 : Colors.black54,
-                      size: 18,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      "MESSAGE",
-                      style: TextStyle(
-                        color: dark ? Colors.white.withOpacity(0.87) : Colors.black87,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13,
-                        letterSpacing: 0.5,
-                   ),
-                        ),
-                      ],
-                    ),
-                  ),
+              // 🟢 FOLLOWING (Klikab)
+              InkWell(
+                onTap: widget.onFollowingTap,
+                borderRadius: BorderRadius.circular(10),
+                child: _StatStream(
+                  title: "Following",
+                  stream: FirebaseFirestore.instance
+                      .collection('users')
+                      .doc(widget.user.uid)
+                      .collection('following')
+                      .snapshots(),
                 ),
               ),
             ],
-          ), 
+          ),
+        ),
 
-  ], 
-);
+        const SizedBox(height: 20),
+
+        // BOUTONS
+        widget.isMyProfile
+            ? Row(
+                children: [
+                  // BOTON EDITE PROFIL
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: widget.onEdit,
+                      child: Container(
+                        height: 44,
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF00E5FF), Color(0xFF00B0FF)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(14),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF00E5FF).withOpacity(0.4),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.edit, color: Colors.white, size: 18),
+                            SizedBox(width: 8),
+                            Text(
+                              "EDITE PROFIL",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+
+                  // BOTON PARAMÈT
+                  GestureDetector(
+                    onTap: widget.onSettings,
+                    child: Container(
+                      height: 44,
+                      width: 44,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(14),
+                        color: dark ? const Color(0xFF1E1E1E) : Colors.grey.shade100,
+                        border: Border.all(
+                          color: dark ? Colors.white10 : Colors.black12,
+                          width: 1,
+                        ),
+                      ),
+                      child: Icon(
+                        Icons.settings,
+                        color: dark ? Colors.white70 : Colors.black54,
+                        size: 20,
+                      ),
+                    ),
+                  ),
+                ],
+              )
+            : Row(
+                children: [
+                  // BOTON SUIVRE / SUIVI
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: _toggleFollow,
+                      child: Container(
+                        height: 44,
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF00E5FF), Color(0xFF00B0FF)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(14),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF00E5FF).withOpacity(0.4),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              isFollowing ? Icons.check : Icons.person_add,
+                              color: Colors.white,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              isFollowing ? "SUIVI" : "SUIVRE",
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+
+                  // BOTON MESSAGE
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () async {
+                        final chatProvider = context.read<ChatProvider>();
+                        final String targetUserId = widget.user.uid;
+
+                        showDialog(
+                          context: context,
+                          barrierDismissible: false,
+                          builder: (_) => const Center(
+                            child: CircularProgressIndicator(
+                              color: Color(0xFF00E5FF),
+                            ),
+                          ),
+                        );
+
+                        try {
+                          String chatId = await chatProvider
+                              .getOrCreateChatRoom(targetUserId);
+                          if (context.mounted) Navigator.pop(context);
+
+                          if (chatId.isNotEmpty && context.mounted) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => ChatPage(chatId: chatId),
+                              ),
+                            );
+                          }
+                        } catch (e) {
+                          if (context.mounted) {
+                            Navigator.pop(context);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("Erè: Enposib pou louvri chat la"),
+                              ),
+                            );
+                          }
+                        }
+                      },
+                      child: Container(
+                        height: 44,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(14),
+                          color: dark ? const Color(0xFF1E1E1E) : Colors.white,
+                          border: Border.all(
+                            color: dark ? Colors.white10 : Colors.black12,
+                            width: 1,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.chat_bubble_outline_rounded,
+                              color: dark ? Colors.white70 : Colors.black54,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              "MESSAGE",
+                              style: TextStyle(
+                                color: dark
+                                    ? Colors.white.withOpacity(0.87)
+                                    : Colors.black87,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+      ],
+    );
   }
 }
+
 class _StatStream extends StatelessWidget {
   final String title;
   final Stream<QuerySnapshot> stream;
@@ -454,36 +448,6 @@ class _StatStream extends StatelessWidget {
           ],
         );
       },
-    );
-  }
-}
-class _StatItem extends StatelessWidget {
-
-  final String title;
-  final String value;
-
-  const _StatItem({
-    required this.title,
-    required this.value,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-
-    return Column(
-      children: [
-
-        Text(
-          value,
-          style: const TextStyle(
-            fontWeight:
-                FontWeight.bold,
-            fontSize: 22,
-          ),
-        ),
-
-        Text(title),
-      ],
     );
   }
 }

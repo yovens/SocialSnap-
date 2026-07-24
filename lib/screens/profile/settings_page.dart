@@ -320,56 +320,146 @@ Text(
     }
   }
 
-  /// ================= PASSWORD =================
-  Future<void> _changePassword() async {
-    final controller = TextEditingController();
+/// ================= PASSWORD =================
+Future<void> _changePassword() async {
+  final currentPasswordController = TextEditingController();
+  final newPasswordController = TextEditingController();
 
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text("Nouveau mot de passe"),
-        content: TextField(
-          controller: controller,
-          obscureText: true,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Annuler"),
+  showDialog(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      title: const Text("Changer le mot de passe"),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          /// 1. Mo de pas aktyèl
+          TextField(
+            controller: currentPasswordController,
+            obscureText: true,
+            decoration: const InputDecoration(
+              labelText: "Mot de passe actuel",
+              hintText: "Saisissez votre mot de passe actuel",
+            ),
           ),
-          ElevatedButton(
-            onPressed: () async {
-              try {
-                await FirebaseAuth.instance.currentUser
-                    ?.updatePassword(controller.text);
+          const SizedBox(height: 15),
 
-                if (mounted) Navigator.pop(context);
-
-                _msg("Mot de passe modifié");
-              } catch (e) {
-                _showError(e);
-              }
-            },
-            child: const Text("Valider"),
+          /// 2. Nouvo mo de pas
+          TextField(
+            controller: newPasswordController,
+            obscureText: true,
+            decoration: const InputDecoration(
+              labelText: "Nouveau mot de passe",
+              hintText: "Au moins 6 caractères",
+            ),
           ),
         ],
       ),
-    );
-  }
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(dialogContext),
+          child: const Text("Annuler"),
+        ),
+        ElevatedButton(
+          onPressed: () async {
+            final currentPwd = currentPasswordController.text.trim();
+            final newPwd = newPasswordController.text.trim();
+
+            if (currentPwd.isEmpty || newPwd.isEmpty) {
+              _msg("Veuillez remplir tous les champs.");
+              return;
+            }
+
+            if (newPwd.length < 6) {
+              _msg("Le nouveau mot de passe doit contenir au moins 6 caractères.");
+              return;
+            }
+
+            try {
+              final user = FirebaseAuth.instance.currentUser;
+
+              if (user != null && user.email != null) {
+                // 🔐 1. Kreye kredansyal ak mo de pas aktyèl la
+                AuthCredential credential = EmailAuthProvider.credential(
+                  email: user.email!,
+                  password: currentPwd,
+                );
+
+                // 🔐 2. Re-otantifye itilizatè a
+                await user.reauthenticateWithCredential(credential);
+
+                // 🔐 3. Chanje mo de pas la kounye a
+                await user.updatePassword(newPwd);
+
+                if (mounted) Navigator.pop(dialogContext);
+                _msg("Mot de passe modifié avec succès !");
+              }
+            } on FirebaseAuthException catch (e) {
+              if (e.code == 'wrong-password' || e.code == 'invalid-credential') {
+                _msg("Le mot de passe actuel est incorrect.");
+              } else {
+                _showError(e);
+              }
+            } catch (e) {
+              _showError(e);
+            }
+          },
+          child: const Text("Valider"),
+        ),
+      ],
+    ),
+  );
+}
 
   /// ================= LOGOUT =================
 Future<void> _logout() async {
-  await FirebaseAuth.instance.signOut();
+  // 1. Afficher la boîte de dialogue de confirmation
+  final bool? confirm = await showDialog<bool>(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: const Text("Déconnexion"),
+        content: const Text("Êtes-vous sûr de vouloir vous déconnecter ?"),
+        actions: [
+          // Bouton d'annulation
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text(
+              "Annuler",
+              style: TextStyle(color: Colors.grey),
+            ),
+          ),
+          // Bouton de confirmation
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text(
+              "Déconnexion",
+              style: TextStyle(
+                color: Colors.redAccent,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      );
+    },
+  );
 
-  if (mounted) {
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (_) => LoginScreen()),
-      (route) => false,
-    );
+  // 2. Si l'utilisateur clique sur "Déconnexion" (confirm == true)
+  if (confirm == true) {
+    await FirebaseAuth.instance.signOut();
+
+    if (mounted) {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+        (route) => false,
+      );
+    }
   }
 }
-
   /// ================= DELETE =================
   Future<void> _deleteAccount() async {
     showDialog(

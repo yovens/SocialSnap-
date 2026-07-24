@@ -21,7 +21,7 @@ class UserPostsGrid extends StatelessWidget {
         child: Padding(
           padding: EdgeInsets.all(32.0),
           child: Text(
-            "Okenn piblikasyon poko fèt",
+            "Aucune publication pour le moment.",
             style: TextStyle(color: Colors.grey),
           ),
         ),

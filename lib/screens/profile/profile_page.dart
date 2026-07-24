@@ -10,6 +10,7 @@ import '../profile/widgets/user_posts_grid.dart';
 
 import 'edit_profile_page.dart';
 import 'settings_page.dart';
+import 'user_list_page.dart';
 import 'widgets/profile_header.dart';
 
 class ProfilePage extends StatelessWidget {
@@ -20,25 +21,34 @@ class ProfilePage extends StatelessWidget {
     required this.uid,
   });
 
+  /// Fonksyon pou rekiperer lis UIDs yo nan Firestore anvan nou louvri UserListPage
+  Future<List<String>> _getUserIds(String collectionName) async {
+    final snapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .collection(collectionName)
+        .get();
+
+    return snapshot.docs.map((doc) => doc.id).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final currentUid = FirebaseAuth.instance.currentUser!.uid;
+    final currentUid = FirebaseAuth.instance.currentUser?.uid ?? '';
     final isMyProfile = currentUid == uid;
 
     final dark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       backgroundColor: dark ? const Color(0xFF121212) : Colors.white,
-
       body: SafeArea(
         child: StreamBuilder<DocumentSnapshot>(
           stream: FirebaseFirestore.instance
               .collection("users")
               .doc(uid)
               .snapshots(),
-
           builder: (context, userSnapshot) {
-            if (!userSnapshot.hasData) {
+            if (!userSnapshot.hasData || !userSnapshot.data!.exists) {
               return const Center(child: CircularProgressIndicator());
             }
 
@@ -53,7 +63,6 @@ class ProfilePage extends StatelessWidget {
                   .collection("posts")
                   .where("uid", isEqualTo: uid)
                   .snapshots(),
-
               builder: (context, postSnapshot) {
                 if (!postSnapshot.hasData) {
                   return const Center(child: CircularProgressIndicator());
@@ -71,32 +80,66 @@ class ProfilePage extends StatelessWidget {
                 return SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
                   padding: const EdgeInsets.all(20),
-
                   child: Column(
                     children: [
-
                       // ================= PROFILE HEADER =================
-                    ProfileHeader(
-  user: user,
-  postsCount: postModels.length,
-  isMyProfile: isMyProfile,
-  onEdit: isMyProfile ? () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => EditProfilePage(user: user),
-      ),
-    );
-  } : null,
-  onSettings: isMyProfile ? () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => const SettingsPage(),
-      ),
-    );
-  } : null,
-),
+                      ProfileHeader(
+                        user: user,
+                        postsCount: postModels.length,
+                        isMyProfile: isMyProfile,
+                        onEdit: isMyProfile
+                            ? () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => EditProfilePage(user: user),
+                                  ),
+                                );
+                              }
+                            : null,
+                        onSettings: isMyProfile
+                            ? () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const SettingsPage(),
+                                  ),
+                                );
+                              }
+                            : null,
+
+                        /// 🟢 OUVÈ LIS ABONNÉS (Followers)
+                        onFollowersTap: () async {
+                          final userIds = await _getUserIds('followers');
+                          if (context.mounted) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => UserListPage(
+                                  title: "Abonnés",
+                                  userIds: userIds,
+                                ),
+                              ),
+                            );
+                          }
+                        },
+
+                        /// 🟢 OUVÈ LIS ABONNEMENTS (Following)
+                        onFollowingTap: () async {
+                          final userIds = await _getUserIds('following');
+                          if (context.mounted) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => UserListPage(
+                                  title: "Abonnements",
+                                  userIds: userIds,
+                                ),
+                              ),
+                            );
+                          }
+                        },
+                      ),
 
                       const SizedBox(height: 25),
 
