@@ -105,6 +105,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 GlassContainer(
                   child: Column(
                     children: [
+                      /// 🟢 LOGO APPLIKASYON AN (IMAJ)
+      Image.asset(
+        'assets/logo.png', // 👈 Mete chemen imaj logo ou an la
+        height: 80, // Axte logo a
+        width: 80,
+      ),
+
+      const SizedBox(height: 15),
                       const Text(
                         "CRÉER UN COMPTE",
                         style: TextStyle(

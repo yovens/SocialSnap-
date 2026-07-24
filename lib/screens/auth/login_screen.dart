@@ -200,6 +200,14 @@ crossAxisAlignment: CrossAxisAlignment.start,
                   ),
                   child: Column(
                     children: [
+                      /// 🟢 LOGO APPLIKASYON AN (IMAJ)
+      Image.asset(
+        'assets/logo.png', // 👈 Mete chemen imaj logo ou an la
+        height: 80, // Axte logo a
+        width: 80,
+      ),
+
+      const SizedBox(height: 15),
                       /// TITLE
                       const Text(
                         "BON RETOUR PARMI NOUS",
