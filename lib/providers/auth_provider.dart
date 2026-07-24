@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/auth_service.dart';
 
-// Chanje non klas la an AppAuthProvider
 class AppAuthProvider with ChangeNotifier {
   final AuthService _authService = AuthService();
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -10,75 +9,84 @@ class AppAuthProvider with ChangeNotifier {
   User? _user;
   bool _isLoading = false;
 
+  // 🟢 1. CONSTRUCTOR: Koute Firebase auth state le app la demare!
+  AppAuthProvider() {
+    _auth.authStateChanges().listen((User? user) {
+      _user = user;
+      notifyListeners(); // Sa di GoRouter ke statu a chanje pou l fè redirection san l pa rete kwense
+    });
+  }
+
   // Getters
   User? get currentUser => _auth.currentUser;
-  User? get user => _user;
+  User? get user => _user ?? _auth.currentUser; // Fè sekirite si _user fenk ap chaje
   bool get isLoading => _isLoading;
-  bool get isAuthenticated => _user != null;
+  bool get isAuthenticated => (_user ?? _auth.currentUser) != null;
 
   // Enskripsyon
-Future<String?> register(String email, String password) async {
-  _isLoading = true;
-  notifyListeners();
-
-  try {
-    await _authService.signUp(email, password);
-
-    _isLoading = false;
+  Future<String?> register(String email, String password) async {
+    _isLoading = true;
     notifyListeners();
 
-    return null;
-  } on FirebaseAuthException catch (e) {
-    _isLoading = false;
-    notifyListeners();
+    try {
+      User? newUser = await _authService.signUp(email, password);
+      
+      // 🟢 Update _user le register fin fèt
+      _user = newUser ?? _auth.currentUser;
+      _isLoading = false;
+      notifyListeners();
 
-    switch (e.code) {
-      case 'email-already-in-use':
-        return "Cette adresse e-mail est déjà utilisée.";
+      return null;
+    } on FirebaseAuthException catch (e) {
+      _isLoading = false;
+      notifyListeners();
 
-      case 'invalid-email':
-        return "Adresse e-mail invalide.";
+      switch (e.code) {
+        case 'email-already-in-use':
+          return "Cette adresse e-mail est déjà utilisée.";
 
-      case 'weak-password':
-        return "Le mot de passe doit contenir au moins 6 caractères.";
+        case 'invalid-email':
+          return "Adresse e-mail invalide.";
 
-      case 'network-request-failed':
-        return "Vérifiez votre connexion Internet.";
+        case 'weak-password':
+          return "Le mot de passe doit contenir au moins 6 caractères.";
 
-      default:
-        return e.message ?? "Une erreur est survenue.";
+        case 'network-request-failed':
+          return "Vérifiez votre connexion Internet.";
+
+        default:
+          return e.message ?? "Une erreur est survenue.";
+      }
+    } catch (_) {
+      _isLoading = false;
+      notifyListeners();
+      return "Une erreur est survenue.";
     }
-  } catch (_) {
-    _isLoading = false;
-    notifyListeners();
-    return "Une erreur est survenue.";
-  }
-}
-
-
-// 🔑 Fonksyon pou voye e-mail reset password
-Future<String?> sendPasswordResetEmail(String email) async {
-  if (email.trim().isEmpty) {
-    return "Veuillez entrer votre adresse e-mail.";
   }
 
-  try {
-    // RANPLASE _firebaseAuth KOTE SA A AK FirebaseAuth.instance
-    await FirebaseAuth.instance.sendPasswordResetEmail(email: email.trim());
-    return null; // Siksè, pa gen erè
-  } on FirebaseAuthException catch (e) {
-    switch (e.code) {
-      case 'user-not-found':
-        return "Aucun utilisateur trouvé avec cette adresse e-mail.";
-      case 'invalid-email':
-        return "L'adresse e-mail n'est pas valide.";
-      default:
-        return e.message ?? "Une erreur est survenue.";
+  // 🔑 Fonksyon pou voye e-mail reset password
+  Future<String?> sendPasswordResetEmail(String email) async {
+    if (email.trim().isEmpty) {
+      return "Veuillez entrer votre adresse e-mail.";
     }
-  } catch (e) {
-    return "Une erreur inattendue est survenue.";
+
+    try {
+      await _auth.sendPasswordResetEmail(email: email.trim());
+      return null;
+    } on FirebaseAuthException catch (e) {
+      switch (e.code) {
+        case 'user-not-found':
+          return "Aucun utilisateur trouvé avec cette adresse e-mail.";
+        case 'invalid-email':
+          return "L'adresse e-mail n'est pas valide.";
+        default:
+          return e.message ?? "Une erreur est survenue.";
+      }
+    } catch (e) {
+      return "Une erreur inattendue est survenue.";
+    }
   }
-}
+
   // Koneksyon
   Future<String?> login(String email, String password) async {
     _isLoading = true;
@@ -91,6 +99,8 @@ Future<String?> sendPasswordResetEmail(String email) async {
         notifyListeners();
         return null;
       }
+      _isLoading = false;
+      notifyListeners();
       return "Erè koneksyon.";
     } catch (e) {
       _isLoading = false;

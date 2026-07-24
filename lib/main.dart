@@ -16,9 +16,6 @@ import 'screens/auth/login_screen.dart';
 import 'screens/auth/register_screen.dart';
 import 'screens/home/home_screen.dart';
 
-// Theme
-import 'theme/app_theme.dart';
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
@@ -59,17 +56,27 @@ class SocialSnapApp extends StatelessWidget {
   }
 }
 
-class AppRouter extends StatelessWidget {
+// 🟢 KORIKSIYON: Nou konvèti AppRouter an StatefulWidget pou pèmèt GoRouter kreyatif yon sèl fwa sèlman!
+class AppRouter extends StatefulWidget {
   const AppRouter({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final authProvider = Provider.of<AppAuthProvider>(context);
-    final themeProvider = Provider.of<ThemeProvider>(context);
+  State<AppRouter> createState() => _AppRouterState();
+}
 
-    final GoRouter router = GoRouter(
+class _AppRouterState extends State<AppRouter> {
+  late final GoRouter _router;
+
+  @override
+  void initState() {
+    super.initState();
+
+    final authProvider = Provider.of<AppAuthProvider>(context, listen: false);
+
+    // 🟢 Nou konfigire GoRouter an yon sèl fwa nan initState
+    _router = GoRouter(
       initialLocation: '/login',
-      refreshListenable: authProvider,
+      refreshListenable: authProvider, // Li ap koute authProvider san li pa re-kreyatif
       redirect: (context, state) {
         final loggedIn = authProvider.isAuthenticated;
         final loggingIn = state.uri.path == '/login';
@@ -100,26 +107,30 @@ class AppRouter extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
 
     return MaterialApp.router(
       title: 'SocialSnap',
       debugShowCheckedModeBanner: false,
 
-      // 🔥 IMPORTANT: Custom theme system
       theme: ThemeData(
-  brightness: Brightness.light,
-  scaffoldBackgroundColor: Colors.white,
-  cardColor: Colors.white,
-),
+        brightness: Brightness.light,
+        scaffoldBackgroundColor: Colors.white,
+        cardColor: Colors.white,
+      ),
 
-darkTheme: ThemeData(
-  brightness: Brightness.dark,
-  scaffoldBackgroundColor: const Color(0xFF121212),
-  cardColor: const Color(0xFF1E1E1E),
-),
+      darkTheme: ThemeData(
+        brightness: Brightness.dark,
+        scaffoldBackgroundColor: const Color(0xFF121212),
+        cardColor: const Color(0xFF1E1E1E),
+      ),
       themeMode: themeProvider.themeMode,
 
-      routerConfig: router,
+      routerConfig: _router, // 🟢 Nou itilize `_router` ki instansye yon sèl fwa a
     );
   }
 }
