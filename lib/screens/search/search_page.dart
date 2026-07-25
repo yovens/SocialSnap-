@@ -16,7 +16,12 @@ class SearchPage extends StatefulWidget {
 class _SearchPageState extends State<SearchPage> {
   final TextEditingController _searchController = TextEditingController();
   String _selectedFilter = 'TOUT';
-  
+
+  /// 🟢 Tri de la grille "Publications" : par date (défaut) ou par popularité.
+  bool _sortByPopularity = false;
+  bool _loadingPopularSort = false;
+  final Map<String, int> _likesCountCache = {};
+
   List<DocumentSnapshot> _allPosts = [];
   List<DocumentSnapshot> _allUsers = [];
   List<DocumentSnapshot> _filteredUsers = [];
@@ -66,6 +71,54 @@ class _SearchPageState extends State<SearchPage> {
         return displayName.contains(lowercaseQuery) || username.contains(lowercaseQuery);
       }).toList();
     });
+  }
+
+  // ───────────────── TRI PAR POPULARITÉ (BF-013) ─────────────────
+
+  /// 🟢 Bat kont like chak pòs (requête `.count()` cote serveur, san nou pa
+  /// bezwen telechaje tout sou-koleksyon `likes` la) epi rekonstwi lis la
+  /// triye pa popilarite desandan.
+  Future<void> _enablePopularitySort() async {
+    setState(() => _loadingPopularSort = true);
+
+    try {
+      for (final doc in _allPosts) {
+        if (_likesCountCache.containsKey(doc.id)) continue;
+        final countSnap = await FirebaseFirestore.instance
+            .collection('posts')
+            .doc(doc.id)
+            .collection('likes')
+            .count()
+            .get();
+        _likesCountCache[doc.id] = countSnap.count ?? 0;
+      }
+    } catch (e) {
+      debugPrint("Erè pandan n ap konte like yo pou tri popilarite: $e");
+    }
+
+    if (mounted) {
+      setState(() {
+        _sortByPopularity = true;
+        _loadingPopularSort = false;
+      });
+    }
+  }
+
+  void _disablePopularitySort() {
+    setState(() => _sortByPopularity = false);
+  }
+
+  /// 🟢 Lis pòs yo, deja triye selon mòd aktyèl la (dat oswa popilarite).
+  List<DocumentSnapshot> get _sortedPosts {
+    if (!_sortByPopularity) return _allPosts; // deja triye pa dat depi fetch
+
+    final sorted = [..._allPosts];
+    sorted.sort((a, b) {
+      final likesA = _likesCountCache[a.id] ?? 0;
+      final likesB = _likesCountCache[b.id] ?? 0;
+      return likesB.compareTo(likesA);
+    });
+    return sorted;
   }
 
   @override
@@ -124,25 +177,57 @@ class _SearchPageState extends State<SearchPage> {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   child: Row(
-                    children: ['TOUT', 'PEOPLE', 'POSTS'].map((filter) {
-                      final isSelected = _selectedFilter == filter;
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 10),
-                        child: InkWell(
-                          onTap: () => setState(() => _selectedFilter = filter),
-                          borderRadius: BorderRadius.circular(20),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                            decoration: BoxDecoration(
-                              color: isSelected ? const Color(0xFF00E5FF).withOpacity(0.15) : Colors.transparent,
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(color: isSelected ? const Color(0xFF00E5FF) : (isDark ? Colors.white24 : Colors.black12)),
-                            ),
-                            child: Text(filter, style: TextStyle(color: isSelected ? const Color(0xFF00E5FF) : (isDark ? Colors.white70 : Colors.black54), fontWeight: FontWeight.bold, fontSize: 13)),
-                          ),
+                    children: [
+                      Expanded(
+                        child: Row(
+                          children: ['TOUT', 'PEOPLE', 'POSTS'].map((filter) {
+                            final isSelected = _selectedFilter == filter;
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 10),
+                              child: InkWell(
+                                onTap: () => setState(() => _selectedFilter = filter),
+                                borderRadius: BorderRadius.circular(20),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                                  decoration: BoxDecoration(
+                                    color: isSelected ? const Color(0xFF00E5FF).withOpacity(0.15) : Colors.transparent,
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(color: isSelected ? const Color(0xFF00E5FF) : (isDark ? Colors.white24 : Colors.black12)),
+                                  ),
+                                  child: Text(filter, style: TextStyle(color: isSelected ? const Color(0xFF00E5FF) : (isDark ? Colors.white70 : Colors.black54), fontWeight: FontWeight.bold, fontSize: 13)),
+                                ),
+                              ),
+                            );
+                          }).toList(),
                         ),
-                      );
-                    }).toList(),
+                      ),
+
+                      // 🟢 Tri Récent / Populaire — seulement utile si des posts sont affichés
+                      if (_selectedFilter == 'TOUT' || _selectedFilter == 'POSTS')
+                        _loadingPopularSort
+                            ? const Padding(
+                                padding: EdgeInsets.only(left: 8),
+                                child: SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                ),
+                              )
+                            : IconButton(
+                                tooltip: _sortByPopularity
+                                    ? "Trier par date récente"
+                                    : "Trier par popularité",
+                                icon: Icon(
+                                  _sortByPopularity ? Icons.local_fire_department : Icons.schedule,
+                                  color: _sortByPopularity
+                                      ? const Color(0xFF00E5FF)
+                                      : (isDark ? Colors.white70 : Colors.black54),
+                                ),
+                                onPressed: _sortByPopularity
+                                    ? _disablePopularitySort
+                                    : _enablePopularitySort,
+                              ),
+                    ],
                   ),
                 ),
               ),
@@ -166,7 +251,7 @@ class _SearchPageState extends State<SearchPage> {
     if (_selectedFilter == 'PEOPLE') {
       return _buildUsersGrid(isDark, _filteredUsers);
     } else if (_selectedFilter == 'POSTS') {
-      return _buildPostsGrid(isDark, _allPosts);
+      return _buildPostsGrid(isDark, _sortedPosts);
     } else {
       return SliverList(
         delegate: SliverChildListDelegate([
@@ -189,9 +274,9 @@ class _SearchPageState extends State<SearchPage> {
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, mainAxisSpacing: 12, crossAxisSpacing: 12, childAspectRatio: 0.85),
-            itemCount: _allPosts.length,
+            itemCount: _sortedPosts.length,
             itemBuilder: (context, index) {
-              return _buildPostCardItem(isDark, _allPosts[index]);
+              return _buildPostCardItem(isDark, _sortedPosts[index]);
             },
           ),
         ]),

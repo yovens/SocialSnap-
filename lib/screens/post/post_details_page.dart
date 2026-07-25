@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
+import 'package:photo_view/photo_view_gallery.dart';
 
 import '../../models/post_model.dart';
 import '../../services/firestore_service.dart';
@@ -111,6 +112,84 @@ if (currentUid.isNotEmpty) {
   });
 }
 
+  // ───────────────── COMMENT TILE (rasin oswa repons) ─────────────────
+  Widget _buildCommentTile({
+    required String commentId,
+    required Map<String, dynamic> data,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // PROFILE PIC
+          CircleAvatar(
+            radius: 16,
+            backgroundImage: NetworkImage(
+              data['profileImageUrl'] ?? "",
+            ),
+          ),
+
+          const SizedBox(width: 8),
+
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // USERNAME CLICKABLE
+                GestureDetector(
+                  onTap: () {
+                    Navigator.pushNamed(
+                      context,
+                      "/profile",
+                      arguments: data['uid'],
+                    );
+                  },
+                  child: Text(
+                    data['username'] ?? "",
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+
+                Text(data['text'] ?? ""),
+
+                Row(
+                  children: [
+                    TextButton(
+                      onPressed: () {
+                        setState(() {
+                          replyToCommentId = commentId;
+                          replyToUsername = data['username'];
+                          _commentCtrl.text = "@${data['username']} ";
+                        });
+                      },
+                      child: const Text("Répondre"),
+                    ),
+
+                    if (data['uid'] == currentUser?.uid)
+                      IconButton(
+                        icon: const Icon(Icons.delete, color: Colors.red),
+                        onPressed: () {
+                          FirebaseFirestore.instance
+                              .collection('posts')
+                              .doc(postId)
+                              .collection('comments')
+                              .doc(commentId)
+                              .delete();
+                        },
+                      ),
+                  ],
+                )
+              ],
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
   // ───────────────── UI ─────────────────
   @override
   Widget build(BuildContext context) {
@@ -153,16 +232,29 @@ if (currentUid.isNotEmpty) {
       body: Column(
         children: [
 
-          // ───────── IMAGE ─────────
+          // ───────── IMAGE(S) ─────────
           Expanded(
             child: GestureDetector(
               onDoubleTap: toggleLike,
-              child: PhotoView(
-                imageProvider: NetworkImage(widget.post.imageUrl),
-                backgroundDecoration: BoxDecoration(
-                  color: dark ? Colors.black : Colors.white,
-                ),
-              ),
+              child: widget.post.imageUrls.length <= 1
+                  ? PhotoView(
+                      imageProvider: NetworkImage(widget.post.imageUrl),
+                      backgroundDecoration: BoxDecoration(
+                        color: dark ? Colors.black : Colors.white,
+                      ),
+                    )
+                  : PhotoViewGallery.builder(
+                      itemCount: widget.post.imageUrls.length,
+                      builder: (context, index) {
+                        return PhotoViewGalleryPageOptions(
+                          imageProvider: NetworkImage(widget.post.imageUrls[index]),
+                        );
+                      },
+                      backgroundDecoration: BoxDecoration(
+                        color: dark ? Colors.black : Colors.white,
+                      ),
+                      pageController: PageController(),
+                    ),
             ),
           ),
 
@@ -205,97 +297,77 @@ if (currentUid.isNotEmpty) {
                   ),
                 ),
 
+                if (widget.post.hashtags.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(
+                      widget.post.hashtags.map((t) => "#$t").join(" "),
+                      style: TextStyle(
+                        color: dark ? const Color(0xFF22E1D0) : const Color(0xFF1A1A2E),
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+
                 const SizedBox(height: 10),
 
-                // ───────── COMMENTS ─────────
+                // ───────── COMMENTS (fil de réponses) ─────────
                 StreamBuilder<QuerySnapshot>(
                   stream: FirebaseFirestore.instance
                       .collection('posts')
                       .doc(postId)
                       .collection('comments')
-                      .orderBy('createdAt', descending: true)
+                      .orderBy('createdAt', descending: false)
                       .snapshots(),
                   builder: (context, snapshot) {
+                    final allDocs = snapshot.data?.docs ?? [];
 
-                    final comments = snapshot.data?.docs ?? [];
+                    // 🟢 Separe kòmantè "rasin" yo (pa gen replyTo) ak repons yo,
+                    // epi gwoupe chak repons anba kòmantè paran li (fil diskisyon).
+                    final rootComments = allDocs.where((doc) {
+                      final data = doc.data() as Map<String, dynamic>;
+                      return data['replyTo'] == null;
+                    }).toList();
+
+                    Map<String, List<QueryDocumentSnapshot>> repliesByParent = {};
+                    for (final doc in allDocs) {
+                      final data = doc.data() as Map<String, dynamic>;
+                      final parentId = data['replyTo'] as String?;
+                      if (parentId != null) {
+                        repliesByParent.putIfAbsent(parentId, () => []).add(doc);
+                      }
+                    }
+
+                    // Pi resan yo anwo pami kòmantè rasin yo.
+                    final orderedRoots = rootComments.reversed.toList();
 
                     return SizedBox(
-                      height: 180,
+                      height: 220,
                       child: ListView.builder(
-                        itemCount: comments.length,
+                        itemCount: orderedRoots.length,
                         itemBuilder: (context, index) {
-                          final data = comments[index].data() as Map<String, dynamic>;
-                          final commentId = comments[index].id;
+                          final rootDoc = orderedRoots[index];
+                          final rootData = rootDoc.data() as Map<String, dynamic>;
+                          final replies = repliesByParent[rootDoc.id] ?? [];
 
-                          return Row(
+                          return Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-
-                              // PROFILE PIC
-                              CircleAvatar(
-                                radius: 16,
-                                backgroundImage: NetworkImage(
-                                  data['profileImageUrl'] ?? "",
-                                ),
+                              _buildCommentTile(
+                                commentId: rootDoc.id,
+                                data: rootData,
                               ),
-
-                              const SizedBox(width: 8),
-
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-
-                                    // USERNAME CLICKABLE
-                                    GestureDetector(
-                                      onTap: () {
-                                        Navigator.pushNamed(
-                                          context,
-                                          "/profile",
-                                          arguments: data['uid'],
-                                        );
-                                      },
-                                      child: Text(
-                                        data['username'] ?? "",
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-
-                                    Text(data['text'] ?? ""),
-
-                                    Row(
-                                      children: [
-
-                                        TextButton(
-                                          onPressed: () {
-                                            setState(() {
-                                              replyToCommentId = commentId;
-                                              replyToUsername = data['username'];
-                                              _commentCtrl.text = "@${data['username']} ";
-                                            });
-                                          },
-                                          child: const Text("Reply"),
-                                        ),
-
-                                        if (data['uid'] == currentUser?.uid)
-                                          IconButton(
-                                            icon: const Icon(Icons.delete, color: Colors.red),
-                                            onPressed: () {
-                                              FirebaseFirestore.instance
-                                                  .collection('posts')
-                                                  .doc(postId)
-                                                  .collection('comments')
-                                                  .doc(commentId)
-                                                  .delete();
-                                            },
-                                          ),
-                                      ],
-                                    )
-                                  ],
+                              // 🟢 Repons yo, mete yon ti dekalaj pou montre yo
+                              // fè pati fil diskisyon kòmantè paran an.
+                              for (final replyDoc in replies)
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 32),
+                                  child: _buildCommentTile(
+                                    commentId: replyDoc.id,
+                                    data: replyDoc.data() as Map<String, dynamic>,
+                                  ),
                                 ),
-                              )
                             ],
                           );
                         },

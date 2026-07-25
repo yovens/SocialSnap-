@@ -135,16 +135,58 @@ if (currentUid.isNotEmpty) {
             },
           ),
 
-          // ───────── IMAGE ─────────
+          // ───────── IMAGE(S) ─────────
           GestureDetector(
             onTap: _openPost,
             child: ClipRRect(
               borderRadius: BorderRadius.circular(12),
-              child: Image.network(
-                widget.post.imageUrl,
+              child: SizedBox(
                 height: 260,
                 width: double.infinity,
-                fit: BoxFit.cover,
+                child: widget.post.imageUrls.length <= 1
+                    ? Image.network(
+                        widget.post.imageUrl,
+                        height: 260,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                      )
+                    : Stack(
+                        alignment: Alignment.bottomCenter,
+                        children: [
+                          PageView.builder(
+                            itemCount: widget.post.imageUrls.length,
+                            itemBuilder: (context, index) {
+                              return Image.network(
+                                widget.post.imageUrls[index],
+                                height: 260,
+                                width: double.infinity,
+                                fit: BoxFit.cover,
+                              );
+                            },
+                          ),
+                          Positioned(
+                            top: 10,
+                            right: 10,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 3,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.black54,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text(
+                                "${widget.post.imageUrls.length} 📷",
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
               ),
             ),
           ),
@@ -159,6 +201,20 @@ if (currentUid.isNotEmpty) {
               style: const TextStyle(fontSize: 14),
             ),
           ),
+
+          // ───────── HASHTAGS ─────────
+          if (widget.post.hashtags.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 4, 12, 0),
+              child: Text(
+                widget.post.hashtags.map((t) => "#$t").join(" "),
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Theme.of(context).colorScheme.primary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
 
           const SizedBox(height: 10),
 
