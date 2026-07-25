@@ -133,7 +133,7 @@ class _PostCardState extends State<PostCard> {
 
                 subtitle: const Text(""),
 
-                
+
               );
             },
           ),
@@ -141,57 +141,57 @@ class _PostCardState extends State<PostCard> {
           // ───────── IMAGE(S) ─────────
           GestureDetector(
             onTap: _openPost,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: SizedBox(
-                height: 260,
-                width: double.infinity,
-                child: widget.post.imageUrls.length <= 1
-                    ? Image.network(
-                        widget.post.imageUrl,
-                        height: 260,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                      )
-                    : Stack(
-                        alignment: Alignment.bottomCenter,
-                        children: [
-                          PageView.builder(
+            child: widget.post.imageUrls.length <= 1
+                ? _AspectRatioNetworkImage(
+                    imageUrl: widget.post.imageUrl,
+                    borderRadius: BorderRadius.circular(12),
+                  )
+                : Stack(
+                    alignment: Alignment.bottomCenter,
+                    children: [
+                      _AspectRatioNetworkImage(
+                        // Nou itilize dimansyon 1e imaj la pou tout carousel la
+                        // (se konsa Instagram fè l tou)
+                        imageUrl: widget.post.imageUrls.first,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      Positioned.fill(
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: PageView.builder(
                             itemCount: widget.post.imageUrls.length,
                             itemBuilder: (context, index) {
                               return Image.network(
                                 widget.post.imageUrls[index],
-                                height: 260,
-                                width: double.infinity,
                                 fit: BoxFit.cover,
                               );
                             },
                           ),
-                          Positioned(
-                            top: 10,
-                            right: 10,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 3,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.black54,
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Text(
-                                "${widget.post.imageUrls.length} 📷",
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 11,
-                                ),
-                              ),
+                        ),
+                      ),
+                      Positioned(
+                        top: 10,
+                        right: 10,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.black54,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            "${widget.post.imageUrls.length} 📷",
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 11,
                             ),
                           ),
-                        ],
+                        ),
                       ),
-              ),
-            ),
+                    ],
+                  ),
           ),
 
           const SizedBox(height: 10),
@@ -276,6 +276,111 @@ class _PostCardState extends State<PostCard> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ═════════════════════════════════════════════════════════════
+// Widget top-level (DEYÒ _PostCardState) ki afiche yon imaj rezo
+// respektan dimansyon (aspect ratio) reyèl li, olye de yon
+// height fiks ki koupe imaj la.
+// ═════════════════════════════════════════════════════════════
+class _AspectRatioNetworkImage extends StatefulWidget {
+  final String imageUrl;
+  final BorderRadiusGeometry? borderRadius;
+
+  const _AspectRatioNetworkImage({
+    required this.imageUrl,
+    this.borderRadius,
+  });
+
+  @override
+  State<_AspectRatioNetworkImage> createState() =>
+      _AspectRatioNetworkImageState();
+}
+
+class _AspectRatioNetworkImageState extends State<_AspectRatioNetworkImage> {
+  double? _ratio; // width / height
+
+  @override
+  void initState() {
+    super.initState();
+    _resolveImageSize();
+  }
+
+  @override
+  void didUpdateWidget(covariant _AspectRatioNetworkImage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Si imageUrl chanje (ex: kat la reyize pou yon lòt post), nou
+    // rekalkile ratio a.
+    if (oldWidget.imageUrl != widget.imageUrl) {
+      _ratio = null;
+      _resolveImageSize();
+    }
+  }
+
+  void _resolveImageSize() {
+    final image = NetworkImage(widget.imageUrl);
+    final stream = image.resolve(const ImageConfiguration());
+    late ImageStreamListener listener;
+
+    listener = ImageStreamListener((info, _) {
+      final w = info.image.width.toDouble();
+      final h = info.image.height.toDouble();
+      if (mounted) {
+        setState(() => _ratio = w / h);
+      }
+      stream.removeListener(listener);
+    }, onError: (error, stackTrace) {
+      // Si rezolisyon an echwe, nou itilize yon ratio default 4:5
+      if (mounted) {
+        setState(() => _ratio = 4 / 5);
+      }
+      stream.removeListener(listener);
+    });
+
+    stream.addListener(listener);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_ratio == null) {
+      // Pandan n ap chaje dimansyon an, nou mete yon placeholder 4:5
+      return ClipRRect(
+        borderRadius: widget.borderRadius ?? BorderRadius.zero,
+        child: AspectRatio(
+          aspectRatio: 4 / 5,
+          child: Container(
+            color: Colors.grey.withOpacity(0.15),
+            child: const Center(
+              child: SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    // Nou limite ratio a EGZAKTMAN tankou Instagram:
+    // - 4:5 (0.8) se limit MAKSIMOM pou yon foto vètikal (pòtrè)
+    // - 1.91:1 se limit MAKSIMOM pou yon foto orizontal (peyizaj)
+    // Nenpòt foto ki pi vètikal pase 4:5 (ex: yon screenshot 9:16)
+    // ap KOUPE (crop) pou antre nan 4:5 — se konsa IG fè l, li pa
+    // janm kite kat la vin pi long pase sa.
+    final clampedRatio = _ratio!.clamp(0.8, 1.91);
+
+    return ClipRRect(
+      borderRadius: widget.borderRadius ?? BorderRadius.zero,
+      child: AspectRatio(
+        aspectRatio: clampedRatio,
+        child: Image.network(
+          widget.imageUrl,
+          fit: BoxFit.cover,
+        ),
       ),
     );
   }
