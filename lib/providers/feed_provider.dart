@@ -22,7 +22,7 @@ class FeedProvider with ChangeNotifier {
           postId: "1",
           uid: "user_test_1",
           username: "Jocelyn",
-          imageUrl: "https://images.unsplash.com/photo-1506744038136-46273834b3fb",
+          imageUrls: const ["https://images.unsplash.com/photo-1506744038136-46273834b3fb"],
           caption: "Premye pòs tès - SocialSnap!",
           createdAt: DateTime.now(),
         ),

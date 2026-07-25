@@ -6,6 +6,7 @@ class CommentModel {
   final String uid;
   final String username; // Mwen ajoute li paske ou itilize l nan fromMap
   final String text;
+  final String? replyTo; // 🟢 id kòmantè paran an si se yon repons
   final DateTime createdAt;
 
   CommentModel({
@@ -14,6 +15,7 @@ class CommentModel {
     required this.uid,
     required this.username, // Obligatwa kounye a
     required this.text,
+    this.replyTo,
     required this.createdAt,
   });
 
@@ -25,6 +27,7 @@ class CommentModel {
       uid: map['uid'] ?? '',
       username: map['username'] ?? '',
       text: map['text'] ?? '',
+      replyTo: map['replyTo'] as String?,
       createdAt: (map['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
   }
@@ -35,6 +38,7 @@ class CommentModel {
       'uid': uid,
       'username': username,
       'text': text,
+      'replyTo': replyTo,
       'createdAt': Timestamp.fromDate(createdAt),
     };
   }
