@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../../models/user_model.dart';
+import '../../services/firestore_service.dart';
 import 'profile_page.dart';
 
 class UserListPage extends StatelessWidget {
@@ -101,33 +102,18 @@ class _FollowButton extends StatelessWidget {
     required this.targetUid,
   });
 
+  // 🟢 Nou pa gen kòd doub ankò isit la — nou pase pa FirestoreService.follow/
+  // unfollow, ki SÈL kote sub-koleksyon yo AK konte yo (followersCount/
+  // followingCount) mete ajou an menm tan (batch atomik). Konsa konte yo
+  // rete kòrèk kèlkeswa ki ekran ou itilize pou swiv/dezabòne.
   Future<void> _toggleFollow(bool isFollowing) async {
-    final batch = FirebaseFirestore.instance.batch();
-
-    final currentUserRef =
-        FirebaseFirestore.instance.collection('users').doc(currentUid);
-    final targetUserRef =
-        FirebaseFirestore.instance.collection('users').doc(targetUid);
-
-    // Sub-collections refs
-    final myFollowingDoc = currentUserRef.collection('following').doc(targetUid);
-    final targetFollowerDoc = targetUserRef.collection('followers').doc(currentUid);
+    final service = FirestoreService();
 
     if (isFollowing) {
-      // Unfollow
-      batch.delete(myFollowingDoc);
-      batch.delete(targetFollowerDoc);
-      batch.update(currentUserRef, {'followingCount': FieldValue.increment(-1)});
-      batch.update(targetUserRef, {'followersCount': FieldValue.increment(-1)});
+      await service.unfollow(myUid: currentUid, targetUid: targetUid);
     } else {
-      // Follow
-      batch.set(myFollowingDoc, {'timestamp': FieldValue.serverTimestamp()});
-      batch.set(targetFollowerDoc, {'timestamp': FieldValue.serverTimestamp()});
-      batch.update(currentUserRef, {'followingCount': FieldValue.increment(1)});
-      batch.update(targetUserRef, {'followersCount': FieldValue.increment(1)});
+      await service.follow(myUid: currentUid, targetUid: targetUid);
     }
-
-    await batch.commit();
   }
 
   @override

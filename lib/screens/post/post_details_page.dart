@@ -27,7 +27,92 @@ class _PostDetailsPageState extends State<PostDetailsPage> {
 
   bool liked = false;
 
+  // 🟢 Eta lokal pou lejand/hashtag yo, pou yo ka chanje san n pa bezwen
+  // rekonstwi PostModel (ki iminab) chak fwa moun nan modifye pòs la.
+  late String _caption;
+  late List<String> _hashtags;
+
   String get postId => widget.post.postId;
+
+  @override
+  void initState() {
+    super.initState();
+    _caption = widget.post.caption;
+    _hashtags = widget.post.hashtags;
+  }
+
+  /// 🟢 Ekstrè hashtag (#mo) nan yon tèks — menm règ ak lè n ap kreye pòs la.
+  List<String> _extractHashtags(String text) {
+    final matches = RegExp(r'#([a-zA-Z0-9_À-ÿ]+)').allMatches(text);
+    final seen = <String>{};
+    final result = <String>[];
+    for (final m in matches) {
+      final tag = m.group(1);
+      if (tag == null) continue;
+      final normalized = tag.toLowerCase();
+      if (seen.add(normalized)) result.add(tag);
+    }
+    return result;
+  }
+
+  // ───────────────── MODIFYE POST (BF-007) ─────────────────
+  Future<void> _editPost() async {
+    final editCtrl = TextEditingController(text: _caption);
+
+    final newCaption = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text("Modifier la légende"),
+        content: TextField(
+          controller: editCtrl,
+          maxLines: 4,
+          autofocus: true,
+          decoration: const InputDecoration(
+            hintText: "Écrivez une description... utilisez #hashtags",
+            border: OutlineInputBorder(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text("Annuler"),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(dialogContext, editCtrl.text.trim()),
+            child: const Text("Enregistrer"),
+          ),
+        ],
+      ),
+    );
+
+    if (newCaption == null || newCaption.isEmpty || !mounted) return;
+
+    final newHashtags = _extractHashtags(newCaption);
+
+    try {
+      await _service.updatePostCaption(
+        postId: postId,
+        caption: newCaption,
+        hashtags: newHashtags,
+      );
+
+      if (!mounted) return;
+      setState(() {
+        _caption = newCaption;
+        _hashtags = newHashtags;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Publication modifiée ✅")),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Erreur : $e")),
+      );
+    }
+  }
 
 
   // ───────────────── LIKE ─────────────────
@@ -36,25 +121,29 @@ class _PostDetailsPageState extends State<PostDetailsPage> {
 
     final uid = currentUser!.uid;
 
-    await _service.toggleLike(postId: postId, uid: uid);
+    final nowLiked = await _service.toggleLike(postId: postId, uid: uid);
 
-final currentUid = FirebaseAuth.instance.currentUser?.uid ?? '';
-if (currentUid.isNotEmpty) {
-  final userSnap = await FirebaseFirestore.instance.collection('users').doc(currentUid).get();
-  if (userSnap.exists && userSnap.data() != null) {
-    final userData = userSnap.data()!;
-    await _service.sendNotification(
-      receiverUid: widget.post.uid,
-      senderUid: currentUid,
-      senderName: userData['displayName'] ?? 'Quelqu\'un',
-      senderProfileImageUrl: userData['profileImageUrl'] ?? '',
-      type: 'like',
-      postId: widget.post.postId, // 👈 Nou itilize .postId
-    );
-  }
-}
+    setState(() => liked = nowLiked);
 
-    setState(() => liked = !liked);
+    // 🟢 Nou voye notifikasyon SÈLMAN lè se yon LIKE (pa yon UNLIKE).
+    // (Oto-notifikasyon sou pwòp pòs ou deja bloke nan sendNotification.)
+    if (!nowLiked) return;
+
+    final currentUid = FirebaseAuth.instance.currentUser?.uid ?? '';
+    if (currentUid.isNotEmpty) {
+      final userSnap = await FirebaseFirestore.instance.collection('users').doc(currentUid).get();
+      if (userSnap.exists && userSnap.data() != null) {
+        final userData = userSnap.data()!;
+        await _service.sendNotification(
+          receiverUid: widget.post.uid,
+          senderUid: currentUid,
+          senderName: userData['displayName'] ?? 'Quelqu\'un',
+          senderProfileImageUrl: userData['profileImageUrl'] ?? '',
+          type: 'like',
+          postId: widget.post.postId, // 👈 Nou itilize .postId
+        );
+      }
+    }
   }
 
   // ───────────────── COMMENT / REPLY ─────────────────
@@ -203,6 +292,12 @@ if (currentUid.isNotEmpty) {
         elevation: 0,
         iconTheme: IconThemeData(color: dark ? Colors.white : Colors.black),
         actions: [
+          // Bouton modifye (Sèlman pou pwopriyetè pòs la) — BF-007
+          if (widget.post.uid == currentUser?.uid)
+            IconButton(
+              icon: const Icon(Icons.edit),
+              onPressed: _editPost,
+            ),
           // Bouton efase (Sèlman pou pwopriyetè pòs la)
           if (widget.post.uid == currentUser?.uid)
             IconButton(
@@ -291,17 +386,17 @@ if (currentUid.isNotEmpty) {
                 const SizedBox(height: 5),
 
                 Text(
-                  widget.post.caption,
+                  _caption,
                   style: TextStyle(
                     color: dark ? Colors.white70 : Colors.black87,
                   ),
                 ),
 
-                if (widget.post.hashtags.isNotEmpty)
+                if (_hashtags.isNotEmpty)
                   Padding(
                     padding: const EdgeInsets.only(top: 4),
                     child: Text(
-                      widget.post.hashtags.map((t) => "#$t").join(" "),
+                      _hashtags.map((t) => "#$t").join(" "),
                       style: TextStyle(
                         color: dark ? const Color(0xFF22E1D0) : const Color(0xFF1A1A2E),
                         fontWeight: FontWeight.w600,
