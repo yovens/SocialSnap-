@@ -18,7 +18,10 @@ class FirestoreService {
   CollectionReference get posts => _db.collection('posts');
 
   // LIKE POST (toggle)
-  Future<void> toggleLike({
+  // 🟢 Retounen `true` si pòs la vin like (aksyon LIKE), `false` si se yon
+  // UNLIKE. Sa pèmèt moun ki rele fonksyon an konnen si li dwe voye yon
+  // notifikasyon oswa non (yo pa dwe voye notifikasyon lè yon moun retire like l).
+  Future<bool> toggleLike({
     required String postId,
     required String uid,
   }) async {
@@ -29,12 +32,15 @@ class FirestoreService {
 
     if (doc.exists) {
       await likeRef.delete();
+      return false; // te vin UNLIKE
     } else {
       await likeRef.set({
         'createdAt': FieldValue.serverTimestamp(),
       });
+      return true; // te vin LIKE
     }
   }
+
 Stream<QuerySnapshot> getPosts() {
   return _db.collection('posts').orderBy('createdAt', descending: true).snapshots();
 }
@@ -55,16 +61,35 @@ Stream<QuerySnapshot> getPosts() {
         .map((doc) => doc.exists);
   }
 
+  // 🟢 Modifye lejand (ak hashtag) yon pòs — sèl lejand ki editab, dapre CDC la.
+  Future<void> updatePostCaption({
+    required String postId,
+    required String caption,
+    List<String> hashtags = const [],
+  }) async {
+    await posts.doc(postId).update({
+      'caption': caption,
+      'hashtags': hashtags,
+      'editedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
 // Nan lib/services/firestore_service.dart
 Future<void> deletePost(String postId) async {
   final postRef = _db.collection('posts').doc(postId);
-  
+
   // Efase kòmantè yo
   final comments = await postRef.collection('comments').get();
-  for (var doc in comments.docs) { 
+  for (var doc in comments.docs) {
     await doc.reference.delete();
   }
-  
+
+  // 🟢 Efase like yo tou (avan sa yo te rete "òfelen" nan Firestore)
+  final likes = await postRef.collection('likes').get();
+  for (var doc in likes.docs) {
+    await doc.reference.delete();
+  }
+
   // Efase pòs la
   await postRef.delete();
 }
@@ -103,45 +128,63 @@ Future<void> deletePost(String postId) async {
   }
 
   // ───────────────── FOLLOW SYSTEM ─────────────────
-     Future<void> follow({
-  required String myUid,
-  required String targetUid,
-}) async {
+  // 🟢 SÈL VÈSYON follow/unfollow nan tout app la. Anvan sa, yon dezyèm
+  // vèsyon te dòmi nan user_list_page.dart e li te mete ajou konte yo
+  // (followersCount/followingCount) pandan vèsyon isit la pa t fè sa —
+  // rezilta a se te konte ki pa koresponn selon ki ekran ou te itilize.
+  // Kounye a tout aksyon follow/unfollow pase pa isit, ak yon batch atomik
+  // ki mete ajou sou-koleksyon yo AK konte yo an menm tan.
+  Future<void> follow({
+    required String myUid,
+    required String targetUid,
+  }) async {
+    if (myUid == targetUid) return; // yon moun pa ka swiv tèt li
 
-  await FirebaseFirestore.instance
-      .collection('users')
-      .doc(targetUid)
-      .collection('followers')
-      .doc(myUid)
-      .set({'createdAt': FieldValue.serverTimestamp()});
+    final batch = _db.batch();
 
-  await FirebaseFirestore.instance
-      .collection('users')
-      .doc(myUid)
-      .collection('following')
-      .doc(targetUid)
-      .set({'createdAt': FieldValue.serverTimestamp()});
-}
+    final targetFollowerDoc =
+        _db.collection('users').doc(targetUid).collection('followers').doc(myUid);
+    final myFollowingDoc =
+        _db.collection('users').doc(myUid).collection('following').doc(targetUid);
 
- Future<void> unfollow({
-  required String myUid,
-  required String targetUid,
-}) async {
+    batch.set(targetFollowerDoc, {'createdAt': FieldValue.serverTimestamp()});
+    batch.set(myFollowingDoc, {'createdAt': FieldValue.serverTimestamp()});
 
-  await FirebaseFirestore.instance
-      .collection('users')
-      .doc(targetUid)
-      .collection('followers')
-      .doc(myUid)
-      .delete();
+    batch.update(_db.collection('users').doc(targetUid), {
+      'followersCount': FieldValue.increment(1),
+    });
+    batch.update(_db.collection('users').doc(myUid), {
+      'followingCount': FieldValue.increment(1),
+    });
 
-  await FirebaseFirestore.instance
-      .collection('users')
-      .doc(myUid)
-      .collection('following')
-      .doc(targetUid)
-      .delete();
-}
+    await batch.commit();
+  }
+
+  Future<void> unfollow({
+    required String myUid,
+    required String targetUid,
+  }) async {
+    if (myUid == targetUid) return;
+
+    final batch = _db.batch();
+
+    final targetFollowerDoc =
+        _db.collection('users').doc(targetUid).collection('followers').doc(myUid);
+    final myFollowingDoc =
+        _db.collection('users').doc(myUid).collection('following').doc(targetUid);
+
+    batch.delete(targetFollowerDoc);
+    batch.delete(myFollowingDoc);
+
+    batch.update(_db.collection('users').doc(targetUid), {
+      'followersCount': FieldValue.increment(-1),
+    });
+    batch.update(_db.collection('users').doc(myUid), {
+      'followingCount': FieldValue.increment(-1),
+    });
+
+    await batch.commit();
+  }
 
 // ───────────────── NOTIFICATIONS ─────────────────
   Future<void> sendNotification({
@@ -152,6 +195,9 @@ Future<void> deletePost(String postId) async {
     required String type,
     String? postId,
   }) async {
+    // 🟢 Pa janm voye yon notifikasyon bay tèt ou (oto-like, oto-koman, elatriye)
+    if (receiverUid == senderUid) return;
+
     await _db.collection('notifications').add({
       'receiverUid': receiverUid,
       'senderUid': senderUid,
