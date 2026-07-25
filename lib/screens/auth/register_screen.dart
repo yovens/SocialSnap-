@@ -8,6 +8,7 @@ import '../../providers/auth_provider.dart';
 import '../../widgets/glass_container.dart';
 import '../../widgets/custom_text_field.dart';
 import '../../widgets/glow_button.dart';
+import '../../l10n/app_localizations.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -113,8 +114,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ),
 
       const SizedBox(height: 15),
-                      const Text(
-                        "CRÉER UN COMPTE",
+                      Text(
+                        AppLocalizations.of(context)!.createAccountTitle,
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -122,8 +123,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                       ),
                       const SizedBox(height: 6),
-                      const Text(
-                        "Rejoignez la communauté SocialSnap",
+                      Text(
+                        AppLocalizations.of(context)!.joinCommunity,
                         style: TextStyle(
                           color: Color(0xFF8A8A8E),
                           fontSize: 13,
@@ -135,8 +136,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       /// PSEUDONYME
                       CustomTextField(
                         controller: _usernameController,
-                        label: "PSEUDONYME",
-                        hint: "Choisissez un pseudo",
+                        label: AppLocalizations.of(context)!.usernameLabel,
+                        hint: AppLocalizations.of(context)!.usernameHint,
                         icon: Icons.person_outline,
                       ),
 
@@ -145,8 +146,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       /// ADRESSE E-MAIL
                       CustomTextField(
                         controller: _emailController,
-                        label: "ADRESSE E-MAIL",
-                        hint: "Adresse e-mail",
+                        label: AppLocalizations.of(context)!.emailAddressLabel,
+                        hint: AppLocalizations.of(context)!.emailHint,
                         icon: Icons.email_outlined,
                         keyboardType: TextInputType.emailAddress,
                       ),
@@ -156,8 +157,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       /// MOT DE PASSE
                       CustomTextField(
                         controller: _passwordController,
-                        label: "MOT DE PASSE",
-                        hint: "Créez un mot de passe sécurisé",
+                        label: AppLocalizations.of(context)!.passwordLabel,
+                        hint: AppLocalizations.of(context)!.passwordHintCreate,
                         icon: Icons.lock_outline,
                         obscureText: true,
                       ),
@@ -167,8 +168,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       /// CONFIRMER LE MOT DE PASSE
                       CustomTextField(
                         controller: _confirmPasswordController,
-                        label: "CONFIRMER LE MOT DE PASSE",
-                        hint: "Confirmez le mot de passe",
+                        label: AppLocalizations.of(context)!.confirmPasswordLabel,
+                        hint: AppLocalizations.of(context)!.confirmPasswordHint,
                         icon: Icons.lock_outline,
                         obscureText: true,
                       ),
@@ -181,7 +182,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               color: Color(0xFF22E1D0),
                             )
                           : GlowButton(
-                              label: "S'INSCRIRE",
+                              label: AppLocalizations.of(context)!.registerButton,
                               onPressed: () async {
                                 final username = _usernameController.text.trim();
                                 final email = _emailController.text.trim();
@@ -194,13 +195,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                     email.isEmpty ||
                                     password.isEmpty) {
                                   _showSnackBar(
-                                      "Veuillez remplir tous les champs.");
+                                      AppLocalizations.of(context)!.fillAllFields);
                                   return;
                                 }
 
                                 if (password != confirmPassword) {
                                   _showSnackBar(
-                                      "Les mots de passe ne correspondent pas.");
+                                      AppLocalizations.of(context)!.passwordsDontMatch);
                                   return;
                                 }
 
@@ -220,7 +221,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                     if (!mounted) return;
                                     setState(() => _isChecking = false);
                                     _showSnackBar(
-                                        "Ce pseudonyme est déjà pris.");
+                                        AppLocalizations.of(context)!.usernameTaken);
                                     return;
                                   }
 
@@ -243,7 +244,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                     if (!mounted) return;
                                     setState(() => _isChecking = false);
                                     _showSnackBar(
-                                        "Erreur lors de la récupération de l'utilisateur.");
+                                        AppLocalizations.of(context)!.userFetchError);
                                     return;
                                   }
 
@@ -273,7 +274,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                                   // 🟢 MESAJ SIKSÈ
                                   _showSnackBar(
-                                    "Compte créé ! Veuillez vérifier votre e-mail avant de vous connecter.",
+                                    AppLocalizations.of(context)!.accountCreatedVerify,
                                     isError: false,
                                   );
 
@@ -288,7 +289,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 } catch (e) {
                                   if (!mounted) return;
                                   setState(() => _isChecking = false);
-                                  _showSnackBar("Une erreur est survenue: $e");
+                                  _showSnackBar(AppLocalizations.of(context)!.genericErrorWithDetail(e.toString()));
                                 }
                               },
                             ),
@@ -298,8 +299,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       /// ================= TEXT BUTTON =================
                       TextButton(
                         onPressed: () => context.pop(),
-                        child: const Text(
-                          "Déjà un compte ? Se connecter",
+                        child: Text(
+                          AppLocalizations.of(context)!.alreadyHaveAccount,
                           style: TextStyle(
                             color: Color(0xFF8A8A8E),
                             fontSize: 13,

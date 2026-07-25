@@ -3,6 +3,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'firebase_options.dart';
+import 'l10n/app_localizations.dart';
+import 'l10n/fallback_delegates.dart';
 
 // Providers
 import 'providers/auth_provider.dart';
@@ -10,6 +12,7 @@ import 'providers/theme_provider.dart';
 import 'providers/notification_provider.dart';
 import 'providers/feed_provider.dart';
 import 'providers/chat_provider.dart';
+import 'providers/locale_provider.dart';
 
 // Screens
 import 'screens/auth/login_screen.dart';
@@ -33,6 +36,7 @@ class SocialSnapApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => LocaleProvider()),
         ChangeNotifierProvider(create: (_) => AppAuthProvider()),
         ChangeNotifierProvider(create: (_) => FeedProvider()),
         ChangeNotifierProvider(create: (_) => ChatProvider()),
@@ -112,10 +116,21 @@ class _AppRouterState extends State<AppRouter> {
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
+    final localeProvider = Provider.of<LocaleProvider>(context);
 
     return MaterialApp.router(
       title: 'SocialSnap',
       debugShowCheckedModeBanner: false,
+
+      // 🟢 Entènasyonalizasyon: Fransè (defo) + Kreyòl Ayisyen
+      locale: localeProvider.locale,
+      supportedLocales: LocaleProvider.supportedLocales,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        HtMaterialLocalizationsDelegate(),
+        HtWidgetsLocalizationsDelegate(),
+        HtCupertinoLocalizationsDelegate(),
+      ],
 
       theme: ThemeData(
         brightness: Brightness.light,

@@ -7,6 +7,7 @@ import '../../providers/theme_provider.dart';
 import 'language_page.dart';
 import 'privacy_page.dart';
 import 'help_page.dart';
+import '../../l10n/app_localizations.dart';
 
 
 class SettingsPage extends StatefulWidget {
@@ -33,7 +34,7 @@ class _SettingsPageState extends State<SettingsPage> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text("Paramètres"),
+        title: Text(AppLocalizations.of(context)!.settingsTitle),
         centerTitle: true,
       ),
       body: ListView(
@@ -61,7 +62,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 const SizedBox(height: 10),
 
                 Text(
-                  user?.displayName ?? "Utilisateur",
+                  user?.displayName ?? AppLocalizations.of(context)!.defaultUserName,
                   style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
 
@@ -90,8 +91,8 @@ class _SettingsPageState extends State<SettingsPage> {
 
                     Text(
                       user?.emailVerified == true
-                          ? "Email vérifié"
-                          : "Email non vérifié",
+                          ? AppLocalizations.of(context)!.emailVerified
+                          : AppLocalizations.of(context)!.emailNotVerified,
                       style: TextStyle(
                         color: user?.emailVerified == true ? Colors.green : Colors.orange,
                       ),
@@ -109,7 +110,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     ),
                   ),
                   onPressed: _verifyEmail,
-                  child: const Text("Renvoyer email de vérification"),
+                  child: Text(AppLocalizations.of(context)!.resendVerificationEmail),
                 )
               ],
             ),
@@ -118,13 +119,13 @@ class _SettingsPageState extends State<SettingsPage> {
           const SizedBox(height: 20),
 
           /// ================= APPARENCE =================
-          _sectionTitle("Apparence"),
+          _sectionTitle(AppLocalizations.of(context)!.appearanceSection),
 
           _glassCard(
             child: SwitchListTile(
               value: dark,
               activeColor: cyan,
-              title: const Text("Mode sombre"),
+              title: Text(AppLocalizations.of(context)!.darkMode),
               secondary: const Icon(Icons.dark_mode),
               onChanged: (value) => themeProvider.toggleTheme(value),
             ),
@@ -133,7 +134,7 @@ class _SettingsPageState extends State<SettingsPage> {
           const SizedBox(height: 20),
 
           /// ================= SECURITE =================
-          _sectionTitle("Sécurité"),
+          _sectionTitle(AppLocalizations.of(context)!.securitySection),
 
           _glassCard(
             child: Column(
@@ -141,7 +142,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
                 ListTile(
                   leading: const Icon(Icons.lock, color: Colors.blue),
-                  title: const Text("Changer mot de passe"),
+                  title: Text(AppLocalizations.of(context)!.changePassword),
                   onTap: _changePassword,
                 ),
 
@@ -149,7 +150,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
                 ListTile(
                   leading: const Icon(Icons.email, color: Colors.orange),
-                  title: const Text("Vérifier email"),
+                  title: Text(AppLocalizations.of(context)!.verifyEmail),
                   onTap: _verifyEmail,
                 ),
               ],
@@ -159,13 +160,13 @@ class _SettingsPageState extends State<SettingsPage> {
           const SizedBox(height: 20),
 
           /// ================= NOTIFICATIONS =================
-          _sectionTitle("Notifications"),
+          _sectionTitle(AppLocalizations.of(context)!.notificationsSection),
 
           _glassCard(
             child: SwitchListTile(
               value: pushNotif,
               activeColor: cyan,
-              title: const Text("Push Notifications"),
+              title: Text(AppLocalizations.of(context)!.pushNotifications),
               secondary: const Icon(Icons.notifications),
               onChanged: (v) => setState(() => pushNotif = v),
             ),
@@ -174,7 +175,7 @@ class _SettingsPageState extends State<SettingsPage> {
           const SizedBox(height: 20),
 
           /// ================= AUTRE =================
-          _sectionTitle("Autres"),
+          _sectionTitle(AppLocalizations.of(context)!.othersSection),
 
 _glassCard(
   child: Column(
@@ -182,8 +183,8 @@ _glassCard(
 
       ListTile(
         leading: const Icon(Icons.language),
-        title: const Text("Langue"),
-        subtitle: const Text("Changer la langue de l’application"),
+        title: Text(AppLocalizations.of(context)!.languageSetting),
+        subtitle: Text(AppLocalizations.of(context)!.languageSubtitle),
         trailing: const Icon(Icons.arrow_forward_ios, size: 16),
       onTap: () {
   Navigator.push(
@@ -197,8 +198,8 @@ _glassCard(
 
       ListTile(
         leading: const Icon(Icons.privacy_tip),
-        title: const Text("Confidentialité"),
-        subtitle: const Text("Gérer vos données et permissions"),
+        title: Text(AppLocalizations.of(context)!.privacySetting),
+        subtitle: Text(AppLocalizations.of(context)!.privacySubtitle),
         trailing: const Icon(Icons.arrow_forward_ios, size: 16),
        onTap: () {
   Navigator.push(
@@ -212,8 +213,8 @@ _glassCard(
 
       ListTile(
         leading: const Icon(Icons.help),
-        title: const Text("Aide"),
-        subtitle: const Text("FAQ et support utilisateur"),
+        title: Text(AppLocalizations.of(context)!.helpSetting),
+        subtitle: Text(AppLocalizations.of(context)!.helpSubtitle),
         trailing: const Icon(Icons.arrow_forward_ios, size: 16),
       onTap: () {
   Navigator.push(
@@ -230,7 +231,7 @@ const SizedBox(height: 8),
 
 // optional info text (très clean UX)
 Text(
-  "Gérez vos préférences et informations de l’application",
+  AppLocalizations.of(context)!.settingsFooterInfo,
   style: TextStyle(
     fontSize: 12,
     color: Colors.grey,
@@ -239,7 +240,7 @@ Text(
           const SizedBox(height: 20),
 
           /// ================= DANGER =================
-          _sectionTitle("Danger"),
+          _sectionTitle(AppLocalizations.of(context)!.dangerSection),
 
           _glassCard(
             child: Column(
@@ -247,7 +248,7 @@ Text(
 
                 ListTile(
                   leading: const Icon(Icons.logout, color: Colors.red),
-                  title: const Text("Déconnexion"),
+                  title: Text(AppLocalizations.of(context)!.logout),
                   onTap: _logout,
                 ),
 
@@ -255,7 +256,7 @@ Text(
 
                 ListTile(
                   leading: const Icon(Icons.delete, color: Colors.red),
-                  title: const Text("Supprimer compte"),
+                  title: Text(AppLocalizations.of(context)!.deleteAccount),
                   onTap: _deleteAccount,
                 ),
               ],
@@ -312,7 +313,7 @@ Text(
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Email de vérification envoyé")),
+          SnackBar(content: Text(AppLocalizations.of(context)!.verificationEmailSent)),
         );
       }
     } catch (e) {
@@ -328,7 +329,7 @@ Future<void> _changePassword() async {
   showDialog(
     context: context,
     builder: (dialogContext) => AlertDialog(
-      title: const Text("Changer le mot de passe"),
+      title: Text(AppLocalizations.of(context)!.changePassword),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -336,9 +337,9 @@ Future<void> _changePassword() async {
           TextField(
             controller: currentPasswordController,
             obscureText: true,
-            decoration: const InputDecoration(
-              labelText: "Mot de passe actuel",
-              hintText: "Saisissez votre mot de passe actuel",
+            decoration: InputDecoration(
+              labelText: AppLocalizations.of(context)!.currentPassword,
+              hintText: AppLocalizations.of(context)!.currentPasswordHint,
             ),
           ),
           const SizedBox(height: 15),
@@ -347,9 +348,9 @@ Future<void> _changePassword() async {
           TextField(
             controller: newPasswordController,
             obscureText: true,
-            decoration: const InputDecoration(
-              labelText: "Nouveau mot de passe",
-              hintText: "Au moins 6 caractères",
+            decoration: InputDecoration(
+              labelText: AppLocalizations.of(context)!.newPassword,
+              hintText: AppLocalizations.of(context)!.newPasswordHint,
             ),
           ),
         ],
@@ -357,7 +358,7 @@ Future<void> _changePassword() async {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(dialogContext),
-          child: const Text("Annuler"),
+          child: Text(AppLocalizations.of(context)!.cancel),
         ),
         ElevatedButton(
           onPressed: () async {
@@ -365,12 +366,12 @@ Future<void> _changePassword() async {
             final newPwd = newPasswordController.text.trim();
 
             if (currentPwd.isEmpty || newPwd.isEmpty) {
-              _msg("Veuillez remplir tous les champs.");
+              _msg(AppLocalizations.of(context)!.fillAllFields);
               return;
             }
 
             if (newPwd.length < 6) {
-              _msg("Le nouveau mot de passe doit contenir au moins 6 caractères.");
+              _msg(AppLocalizations.of(context)!.newPasswordTooShort);
               return;
             }
 
@@ -391,11 +392,11 @@ Future<void> _changePassword() async {
                 await user.updatePassword(newPwd);
 
                 if (mounted) Navigator.pop(dialogContext);
-                _msg("Mot de passe modifié avec succès !");
+                _msg(AppLocalizations.of(context)!.passwordChangedSuccess);
               }
             } on FirebaseAuthException catch (e) {
               if (e.code == 'wrong-password' || e.code == 'invalid-credential') {
-                _msg("Le mot de passe actuel est incorrect.");
+                _msg(AppLocalizations.of(context)!.wrongCurrentPassword);
               } else {
                 _showError(e);
               }
@@ -403,7 +404,7 @@ Future<void> _changePassword() async {
               _showError(e);
             }
           },
-          child: const Text("Valider"),
+          child: Text(AppLocalizations.of(context)!.validate),
         ),
       ],
     ),
@@ -420,22 +421,22 @@ Future<void> _logout() async {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
-        title: const Text("Déconnexion"),
-        content: const Text("Êtes-vous sûr de vouloir vous déconnecter ?"),
+        title: Text(AppLocalizations.of(context)!.logoutConfirmTitle),
+        content: Text(AppLocalizations.of(context)!.logoutConfirmMessage),
         actions: [
           // Bouton d'annulation
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text(
-              "Annuler",
+            child: Text(
+              AppLocalizations.of(context)!.cancel,
               style: TextStyle(color: Colors.grey),
             ),
           ),
           // Bouton de confirmation
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text(
-              "Déconnexion",
+            child: Text(
+              AppLocalizations.of(context)!.logout,
               style: TextStyle(
                 color: Colors.redAccent,
                 fontWeight: FontWeight.bold,
@@ -465,12 +466,12 @@ Future<void> _logout() async {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text("Supprimer compte"),
-        content: const Text("Cette action est irréversible."),
+        title: Text(AppLocalizations.of(context)!.deleteAccount),
+        content: Text(AppLocalizations.of(context)!.deleteAccountConfirmMessage),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("Annuler"),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
@@ -482,7 +483,7 @@ Future<void> _logout() async {
                 _showError(e);
               }
             },
-            child: const Text("Supprimer"),
+            child: Text(AppLocalizations.of(context)!.delete),
           ),
         ],
       ),
@@ -498,7 +499,7 @@ Future<void> _logout() async {
 
   void _showError(Object e) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Erreur: $e")),
+      SnackBar(content: Text(AppLocalizations.of(context)!.errorWithDetail(e.toString()))),
     );
   }
 }
