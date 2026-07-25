@@ -100,18 +100,21 @@ class ChatService {
   // SEND MESSAGE
   //==========================================================
 
-  // Vèsyon sa a sipòte tou de fason Provider a ka rele l
+//==========================================================
+  // SEND MESSAGE (Ranje pou sipòte Imaj & Tèks)
+  //==========================================================
+
   Future<void> sendMessage({
     required String chatId,
     MessageModel? message,
     String? senderId,
     String? targetId,
     String? text,
+    String type = 'text', // 👈 Ajoute type ('text' ou 'image')
   }) async {
     final chatRef = _chatCollection.doc(chatId);
     final msgRef = chatRef.collection("messages").doc();
     
-    // Jwenn targetId a si se tèks sèlman ki pase
     String finalTargetId = targetId ?? "";
     if (finalTargetId.isEmpty && chatId.contains('_')) {
       finalTargetId = chatId.split('_').firstWhere((id) => id != currentUid, orElse: () => '');
@@ -123,13 +126,13 @@ class ChatService {
     if (message != null) {
       data = message.toMap();
       txtMessage = message.message;
-      // Asire nou receiverId la la si modèl la genyen l
       if (data["receiverId"] == null) data["receiverId"] = finalTargetId;
     } else {
       data = {
         "senderId": senderId ?? currentUid,
-        "receiverId": finalTargetId, // ✅ Pwòp pou lòt user a ka rekonèt li
+        "receiverId": finalTargetId,
         "message": text ?? "",
+        "type": type, // 👈 Anrejistre tip mesaj la
         "isSeen": false,
       };
       txtMessage = text ?? "";
@@ -137,7 +140,6 @@ class ChatService {
 
     data["timestamp"] = FieldValue.serverTimestamp();
 
-    // Itilize yon Batch pou tout bagay monte ansanm anmenmtan
     final batch = _firestore.batch();
     
     // 1. Kreye mesaj la
@@ -152,13 +154,15 @@ class ChatService {
       unread = Map<String, dynamic>.from(map["unreadCount"] ?? {});
     }
     
-    // Ogmante unreadCount pou lòt moun nan
     if (finalTargetId.isNotEmpty) {
       unread[finalTargetId] = (unread[finalTargetId] ?? 0) + 1;
     }
 
+    // Si se yon imaj, nou mete "📷 Photo" kòm lastMessage nan lis chat yo
+    final displayLastMessage = type == 'image' ? "📷 Photo" : txtMessage;
+
     batch.update(chatRef, {
-      "lastMessage": txtMessage,
+      "lastMessage": displayLastMessage,
       "lastSenderId": currentUid,
       "lastMessageTime": FieldValue.serverTimestamp(),
       "unreadCount": unread,

@@ -3,9 +3,15 @@ import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:image_picker/image_picker.dart';
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:http/http.dart' as http;
 import '../../providers/chat_provider.dart';
 import '../../widgets/chat/message_bubble.dart';
 import '../../widgets/chat/message_input.dart';
+import '../../models/user_model.dart'; // 💡 Assure-toi d'avoir le bon chemin vers UserModel
+import 'chat_info_page.dart'; // 💡 Import de la page ChatInfoPage
 
 class ChatPage extends StatefulWidget {
   final String chatId;
@@ -17,6 +23,37 @@ class ChatPage extends StatefulWidget {
 }
 
 class _ChatPageState extends State<ChatPage> {
+
+
+  Future<String?> uploadImageToImgBB(File imageFile) async {
+  try {
+    // ⚠️ Mete API Key ImgBB pa w la la
+    const String apiKey = '6af56b5d2a71117a5a3e330a2e3ac5bc'; 
+
+    final request = http.MultipartRequest(
+      'POST',
+      Uri.parse('https://api.imgbb.com/1/upload?key=$apiKey'),
+    );
+
+    request.files.add(
+      await http.MultipartFile.fromPath('image', imageFile.path),
+    );
+
+    final response = await request.send();
+
+    if (response.statusCode == 200) {
+      final responseData = await response.stream.bytesToString();
+      final json = jsonDecode(responseData);
+      return json['data']['url'] as String?;
+    } else {
+      print("Erreur ImgBB: ${response.statusCode}");
+      return null;
+    }
+  } catch (e) {
+    print("Erreur upload image: $e");
+    return null;
+  }
+}
   final TextEditingController controller = TextEditingController();
 
   @override
@@ -94,10 +131,13 @@ class _ChatPageState extends State<ChatPage> {
             String nom = "Chargement...";
             String photo = "";
             bool enLigne = false;
+            UserModel? targetUser;
 
             if (snapshot.hasData && snapshot.data!.exists) {
-              final data =
-                  snapshot.data!.data() as Map<String, dynamic>;
+              final data = snapshot.data!.data() as Map<String, dynamic>;
+
+              // Création de l'objet UserModel à partir des données Firestore
+              targetUser = UserModel.fromMap(data);
 
               nom = data['username'] ??
                   data['displayName'] ??
@@ -107,64 +147,80 @@ class _ChatPageState extends State<ChatPage> {
               enLigne = data['isOnline'] ?? false;
             }
 
-            return Row(
-              children: [
-                // ================= AVATAR =================
-                Stack(
-                  children: [
-                    CircleAvatar(
-                      radius: 20,
-                      backgroundColor: Colors.grey[300],
-                      backgroundImage: photo.isNotEmpty
-                          ? NetworkImage(photo)
-                          : const NetworkImage(
-                              "https://cdn-icons-png.flaticon.com/512/3135/3135715.png",
-                            ),
-                    ),
+            // 🟢 GestureDetector permet de cliquer sur la photo et le nom
+            return GestureDetector(
+              onTap: () {
+                if (targetUser != null) {
+                // ✅ KÒD KI KORUJE A:
+Navigator.push(
+  context,
+  MaterialPageRoute(
+    builder: (_) => ChatInfoPage(
+      user: targetUser!,
+      chatId: widget.chatId, // 👈 Ajoute liy sa a bò kote user a
+    ),
+  ),
+);
+                }
+              },
+              child: Row(
+                children: [
+                  // ================= AVATAR =================
+                  Stack(
+                    children: [
+                      CircleAvatar(
+                        radius: 20,
+                        backgroundColor: Colors.grey[300],
+                        backgroundImage: photo.isNotEmpty
+                            ? NetworkImage(photo)
+                            : const NetworkImage(
+                                "https://cdn-icons-png.flaticon.com/512/3135/3135715.png",
+                              ) as ImageProvider,
+                      ),
 
-                    if (enLigne)
-                      Positioned(
-                        bottom: 0,
-                        right: 0,
-                        child: Container(
-                          width: 10,
-                          height: 10,
-                          decoration: BoxDecoration(
-                            color: Colors.cyan,
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: isDarkMode
-                                  ? Colors.black
-                                  : Colors.white,
-                              width: 2,
+                      if (enLigne)
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: Container(
+                            width: 10,
+                            height: 10,
+                            decoration: BoxDecoration(
+                              color: Colors.cyan,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: isDarkMode
+                                    ? Colors.black
+                                    : Colors.white,
+                                width: 2,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                  ],
-                ),
+                    ],
+                  ),
 
-                const SizedBox(width: 10),
+                  const SizedBox(width: 10),
 
-                // ================= NOM + STATUT =================
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      nom,
-                      style: TextStyle(
-                        color: isDarkMode
-                            ? Colors.white
-                            : Colors.black87,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                  // ================= NOM + STATUT =================
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        nom,
+                        style: TextStyle(
+                          color: isDarkMode
+                              ? Colors.white
+                              : Colors.black87,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 2),
-                   
-                  ],
-                ),
-              ],
+                      const SizedBox(height: 2),
+                    ],
+                  ),
+                ],
+              ),
             );
           },
         ),
@@ -233,45 +289,97 @@ class _ChatPageState extends State<ChatPage> {
 
                       return MessageBubble(
                         message: msg,
-                        isMe:
-                            msg.senderId == provider.myUid,
+                        isMe: msg.senderId == provider.myUid,
                       );
                     },
                   ),
           ),
 
           // ================= INPUT =================
-       MessageInput(
-  controller: controller,
-  onSend: () {
-    final textToSend = controller.text.trim();
-    if (textToSend.isNotEmpty) {
-      provider.sendMessage(
-        chatId: widget.chatId,
-        text: textToSend,
-      );
-      controller.clear();
-    }
-  },
-  // ✅ KÒD KI POU OUVRI GALERI A TOUTBON VRE
-  onImagePick: () async {
-    final ImagePicker picker = ImagePicker();
-    // Ouvri galeri a pou itilizatè a chwazi yon foto
-    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-    
-    if (image != null) {
-      // Si l chwazi yon foto, voye l bay provider a pou l upload nan ImgBB / Firebase
-      // pa egzanp: await provider.sendImageMessage(widget.chatId, image.path);
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Foto chwazi: ${image.name}"),
-          backgroundColor: Colors.cyan,
+       // ================= INPUT OWSWA MESAJ BLOCAGE =================
+StreamBuilder<DocumentSnapshot>(
+  stream: FirebaseFirestore.instance
+      .collection('users')
+      .doc(FirebaseAuth.instance.currentUser?.uid)
+      .collection('blocked')
+      .doc(targetUid) // targetUid se ID lòt moun nan
+      .snapshots(),
+  builder: (context, snapshot) {
+    final isBlockedByMe = snapshot.hasData && snapshot.data!.exists;
+
+    // 1. Si ou bloke moun sa a
+    if (isBlockedByMe) {
+      return Container(
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+        color: isDarkMode ? Colors.grey[900] : Colors.grey[200],
+        width: double.infinity,
+        child: const Text(
+          "Vous avez bloqué cet utilisateur. Débloquez-le pour pouvoir envoyer des messages.",
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: Colors.redAccent,
+            fontWeight: FontWeight.w600,
+            fontSize: 14,
+          ),
         ),
       );
     }
+
+    // 2. Si ou pa bloke l, afiche MessageInput nòmal la
+    return MessageInput(
+      controller: controller,
+      onSend: () {
+        final textToSend = controller.text.trim();
+        if (textToSend.isNotEmpty) {
+          provider.sendMessage(
+            chatId: widget.chatId,
+            text: textToSend,
+          );
+          controller.clear();
+        }
+      },
+   onImagePick: () async {
+  final ImagePicker picker = ImagePicker();
+  final XFile? image = await picker.pickImage(
+    source: ImageSource.gallery,
+    imageQuality: 70, // Akseleye upload la
+  );
+
+  if (image != null && mounted) {
+    // 1. Afiche yon ti loading nan SnackBar
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Envoi de l'image en cours..."),
+        backgroundColor: Colors.orange,
+        duration: Duration(seconds: 2),
+      ),
+    );
+
+    // 2. Upload sou ImgBB
+    final File file = File(image.path);
+    final String? imageUrl = await uploadImageToImgBB(file);
+
+    if (imageUrl != null && mounted) {
+      // 3. Voye imaj la atravè Provider / Service
+      final provider = context.read<ChatProvider>();
+      await provider.sendMessage(
+        chatId: widget.chatId,
+        text: imageUrl,
+        type: 'image', // 👈 Mete type la 'image'
+      );
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Erreur lors de l'envoi de l'image."),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+},
+    );
   },
-),
+)
         ],
       ),
     );

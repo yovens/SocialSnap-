@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart'; // ✅ Enpòtan pou tcheke fòma "Timestamp" la
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../models/message_model.dart';
 
 class MessageBubble extends StatelessWidget {
@@ -12,9 +12,8 @@ class MessageBubble extends StatelessWidget {
     required this.isMe,
   });
 
-  // ✅ KÒD LÈ A METE NAN PLAS LI KÒRÈKMAN KÒM YON METÒD KLAS LA
   String _formatMessageTime(dynamic timestamp) {
-    if (timestamp == null) return "12:48 PM"; // Default si Firebase poko synchro
+    if (timestamp == null) return "12:48 PM";
     
     DateTime dateTime = (timestamp is Timestamp) ? timestamp.toDate() : timestamp;
     int hour = dateTime.hour;
@@ -31,9 +30,29 @@ class MessageBubble extends StatelessWidget {
     return "$hour:$minuteStr $period";
   }
 
+  // 💡 Mètod pou tcheke si yon tèks se yon lyen imaj (ImgBB oswa web)
+  bool _isImageUrl(String text) {
+    final lower = text.toLowerCase().trim();
+    return lower.startsWith('http://') || 
+           lower.startsWith('https://') || 
+           lower.contains('ibb.co') || 
+           lower.endsWith('.jpg') || 
+           lower.endsWith('.png') || 
+           lower.endsWith('.jpeg') || 
+           lower.endsWith('.webp');
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    // 💡 Jwenn URL imaj la (fwa sa a nou gade mediaUrl AK message.message)
+    final String? directMediaUrl = message.mediaUrl;
+    final bool isMessageAnImage = _isImageUrl(message.message);
+    
+    final String? finalImageUrl = (directMediaUrl != null && directMediaUrl.isNotEmpty)
+        ? directMediaUrl
+        : (isMessageAnImage ? message.message : null);
 
     return Align(
       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
@@ -42,9 +61,8 @@ class MessageBubble extends StatelessWidget {
         padding: const EdgeInsets.all(12),
         constraints: const BoxConstraints(maxWidth: 280),
         decoration: BoxDecoration(
-          // 🎨 Koulè dinamik pou Dark Mode ak bèl ekla cyan si se mwen k voye l
           color: isMe
-              ? const Color(0xFF00E5FF).withOpacity(0.15) // Ti koulè cyan transparan (Glassmorphism look)
+              ? const Color(0xFF00E5FF).withOpacity(0.15)
               : (isDarkMode ? const Color(0xFF1E1E1E) : Colors.white),
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(20),
@@ -54,7 +72,7 @@ class MessageBubble extends StatelessWidget {
           ),
           border: Border.all(
             color: isMe 
-                ? const Color(0xFF00E5FF).withOpacity(0.4) // Liy neon cyan sou mesaj mwen yo
+                ? const Color(0xFF00E5FF).withOpacity(0.4)
                 : (isDarkMode ? Colors.white10 : Colors.black12),
             width: 1,
           ),
@@ -70,21 +88,49 @@ class MessageBubble extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            // 📷 Afiche foto si mesaj la gen yon lyen imaj
-            if (message.mediaUrl != null && message.mediaUrl!.isNotEmpty) ...[
+            // 📷 AFICHE IMAJ LA (si nou jwenn yon URL)
+            if (finalImageUrl != null) ...[
               ClipRRect(
                 borderRadius: BorderRadius.circular(14),
                 child: Image.network(
-                  message.mediaUrl!,
+                  finalImageUrl,
                   fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image, color: Colors.grey),
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return Container(
+                      height: 180,
+                      width: double.infinity,
+                      color: isDarkMode ? Colors.white10 : Colors.black12,
+                      child: const Center(
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Color(0xFF00E5FF),
+                        ),
+                      ),
+                    );
+                  },
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    padding: const EdgeInsets.all(10),
+                    color: Colors.red.withOpacity(0.1),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.broken_image, color: Colors.red, size: 20),
+                        SizedBox(width: 6),
+                        Text(
+                          "Erreur de chargement",
+                          style: TextStyle(color: Colors.red, fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(height: 6),
             ],
             
-            // 💬 Tèks mesaj la
-            if (message.message.isNotEmpty)
+            // 💬 AFICHE TÈKS LA (sèlman si se pa yon imaj pi)
+            if (message.message.isNotEmpty && !isMessageAnImage)
               Text(
                 message.message,
                 style: TextStyle(
@@ -96,13 +142,12 @@ class MessageBubble extends StatelessWidget {
               
             const SizedBox(height: 6),
             
-            // 🕒 Lè a ak Ti double chèk (Done All)
+            // 🕒 LÈ AK CHÈK CYAN
             Row(
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 Text(
-                  // ✅ Kounye a li pran bon lè dinamik la!
                   _formatMessageTime(message.timestamp), 
                   style: TextStyle(
                     fontSize: 10,
@@ -111,10 +156,10 @@ class MessageBubble extends StatelessWidget {
                 ),
                 if (isMe) ...[
                   const SizedBox(width: 4),
-                  const Icon(
+                  Icon(
                     Icons.done_all,
                     size: 14,
-                    color: Color(0xFF00E5FF), // Ti chèk cyan an liy ak tèm nan
+                    color: message.isSeen ? const Color(0xFF00E5FF) : Colors.grey,
                   ),
                 ],
               ],
