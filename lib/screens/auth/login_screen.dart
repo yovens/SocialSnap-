@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../providers/auth_provider.dart';
 import '../../widgets/custom_text_field.dart';
+import '../../l10n/app_localizations.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -55,8 +56,8 @@ class _LoginScreenState extends State<LoginScreen> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
-              title: const Text(
-                "Réinitialiser le mot de passe",
+              title: Text(
+                AppLocalizations.of(context)!.resetPasswordTitle,
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               content: Column(
@@ -64,8 +65,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 // 🟢 KORÈK
 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    "Entrez votre e-mail pour recevoir un lien de réinitialisation.",
+                  Text(
+                    AppLocalizations.of(context)!.resetPasswordDesc,
                     style: TextStyle(fontSize: 13, color: Color(0xFF6C6C6C)),
                   ),
                   const SizedBox(height: 15),
@@ -73,8 +74,8 @@ crossAxisAlignment: CrossAxisAlignment.start,
                     controller: resetEmailController,
                     keyboardType: TextInputType.emailAddress,
                     decoration: InputDecoration(
-                      labelText: "ADRESSE E-MAIL",
-                      hintText: "exemple@gmail.com",
+                      labelText: AppLocalizations.of(context)!.emailAddressLabel,
+                      hintText: AppLocalizations.of(context)!.emailAddressHint,
                       prefixIcon: const Icon(Icons.email_outlined),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -86,8 +87,8 @@ crossAxisAlignment: CrossAxisAlignment.start,
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text(
-                    "Annuler",
+                  child: Text(
+                    AppLocalizations.of(context)!.cancel,
                     style: TextStyle(color: Colors.grey),
                   ),
                 ),
@@ -116,7 +117,7 @@ crossAxisAlignment: CrossAxisAlignment.start,
 
                           if (error == null) {
                             _showSnackBar(
-                              "E-mail de réinitialisation envoyé ! Vérifiez votre boîte mail.",
+                              AppLocalizations.of(context)!.resetEmailSent,
                               isError: false,
                             );
                           } else {
@@ -132,8 +133,8 @@ crossAxisAlignment: CrossAxisAlignment.start,
                             color: Colors.white,
                           ),
                         )
-                      : const Text(
-                          "Envoyer",
+                      : Text(
+                          AppLocalizations.of(context)!.send,
                           style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
@@ -209,8 +210,8 @@ crossAxisAlignment: CrossAxisAlignment.start,
 
       const SizedBox(height: 15),
                       /// TITLE
-                      const Text(
-                        "BON RETOUR PARMI NOUS",
+                      Text(
+                        AppLocalizations.of(context)!.loginWelcomeBack,
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 20,
@@ -224,8 +225,8 @@ crossAxisAlignment: CrossAxisAlignment.start,
                       /// EMAIL
                       CustomTextField(
                         controller: _emailController,
-                        label: "EMAIL",
-                        hint: "Adresse e-mail",
+                        label: AppLocalizations.of(context)!.emailLabel,
+                        hint: AppLocalizations.of(context)!.emailHint,
                         icon: Icons.person_outline,
                       ),
 
@@ -234,7 +235,7 @@ crossAxisAlignment: CrossAxisAlignment.start,
                       /// PASSWORD
                       CustomTextField(
                         controller: _passwordController,
-                        label: "MOT DE PASSE",
+                        label: AppLocalizations.of(context)!.passwordLabel,
                         hint: "********",
                         icon: Icons.lock_outline,
                         obscureText: true,
@@ -245,8 +246,8 @@ crossAxisAlignment: CrossAxisAlignment.start,
                         alignment: Alignment.centerRight,
                         child: TextButton(
                           onPressed: _showForgotPasswordDialog,
-                          child: const Text(
-                            "Mot de passe oublié ?",
+                          child: Text(
+                            AppLocalizations.of(context)!.forgotPassword,
                             style: TextStyle(
                               color: Color(0xFF1A1A2E),
                               fontSize: 12,
@@ -278,7 +279,7 @@ crossAxisAlignment: CrossAxisAlignment.start,
                                   final password = _passwordController.text.trim();
 
                                   if (email.isEmpty || password.isEmpty) {
-                                    _showSnackBar("Veuillez remplir tous les champs.");
+                                    _showSnackBar(AppLocalizations.of(context)!.fillAllFields);
                                     return;
                                   }
 
@@ -303,7 +304,7 @@ crossAxisAlignment: CrossAxisAlignment.start,
                                     await FirebaseAuth.instance.signOut();
                                     if (!mounted) return;
                                     _showSnackBar(
-                                      "Veuillez vérifier votre e-mail avant de vous connecter.",
+                                      AppLocalizations.of(context)!.verifyEmailBeforeLogin,
                                     );
                                     return;
                                   }
@@ -312,8 +313,8 @@ crossAxisAlignment: CrossAxisAlignment.start,
                                     context.go('/home');
                                   }
                                 },
-                                child: const Text(
-                                  "SE CONNECTER",
+                                child: Text(
+                                  AppLocalizations.of(context)!.loginButton,
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white,
@@ -327,8 +328,8 @@ crossAxisAlignment: CrossAxisAlignment.start,
                       /// ================= REGISTER =================
                       TextButton(
                         onPressed: () => context.push('/register'),
-                        child: const Text(
-                          "Pas encore de compte ? Créer un compte",
+                        child: Text(
+                          AppLocalizations.of(context)!.noAccountRegister,
                           style: TextStyle(
                             color: Color(0xFF8A8A8E),
                             fontSize: 13,
