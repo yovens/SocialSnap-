@@ -23,28 +23,31 @@ class _PostCardState extends State<PostCard> {
 
   // ───────── LIKE TOGGLE ─────────
   void _toggleLike() async {
-    await _service.toggleLike(
+    final nowLiked = await _service.toggleLike(
       postId: widget.post.postId,
       uid: uid,
     );
 
-   // 🟢 Ranplase kòd sendNotification anlè a ak sa a:
-final currentUid = FirebaseAuth.instance.currentUser?.uid ?? '';
-if (currentUid.isNotEmpty) {
-  final userSnap = await FirebaseFirestore.instance.collection('users').doc(currentUid).get();
-  if (userSnap.exists && userSnap.data() != null) {
-    final userData = userSnap.data()!;
-    
-    await _service.sendNotification(
-      receiverUid: widget.post.uid, // oswa widget.post.authorUid daprè modèl ou
-      senderUid: currentUid,
-      senderName: userData['displayName'] ?? 'Quelqu\'un',
-      senderProfileImageUrl: userData['profileImageUrl'] ?? '',
-      type: 'like',
-      postId: widget.post.postId, // 👈 Nou chanje .id pou l vin .postId pou evite erè a
-    );
-  }
-}
+    // 🟢 Nou voye notifikasyon SÈLMAN lè se yon LIKE (pa yon UNLIKE).
+    // (Oto-notifikasyon sou pwòp pòs ou deja bloke nan sendNotification.)
+    if (!nowLiked) return;
+
+    final currentUid = FirebaseAuth.instance.currentUser?.uid ?? '';
+    if (currentUid.isNotEmpty) {
+      final userSnap = await FirebaseFirestore.instance.collection('users').doc(currentUid).get();
+      if (userSnap.exists && userSnap.data() != null) {
+        final userData = userSnap.data()!;
+
+        await _service.sendNotification(
+          receiverUid: widget.post.uid, // oswa widget.post.authorUid daprè modèl ou
+          senderUid: currentUid,
+          senderName: userData['displayName'] ?? 'Quelqu\'un',
+          senderProfileImageUrl: userData['profileImageUrl'] ?? '',
+          type: 'like',
+          postId: widget.post.postId, // 👈 Nou chanje .id pou l vin .postId pou evite erè a
+        );
+      }
+    }
   }
 
   // ───────── OPEN POST DETAILS ─────────
