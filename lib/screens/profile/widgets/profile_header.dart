@@ -7,6 +7,7 @@ import '../../../models/user_model.dart';
 import '../../../providers/chat_provider.dart';
 import '../../../services/firestore_service.dart';
 import '../../chat/chat_page.dart';
+import '../../../l10n/app_localizations.dart';
 
 class ProfileHeader extends StatefulWidget {
   final UserModel user;
@@ -179,7 +180,7 @@ class _ProfileHeaderState extends State<ProfileHeader> {
             children: [
               // POSTS (Pa klikab)
               _StatStream(
-                title: "Posts",
+                title: AppLocalizations.of(context)!.statPosts,
                 stream: FirebaseFirestore.instance
                     .collection('posts')
                     .where('uid', isEqualTo: widget.user.uid)
@@ -191,7 +192,7 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                 onTap: widget.onFollowersTap,
                 borderRadius: BorderRadius.circular(10),
                 child: _StatStream(
-                  title: "Followers",
+                  title: AppLocalizations.of(context)!.statFollowers,
                   stream: FirebaseFirestore.instance
                       .collection('users')
                       .doc(widget.user.uid)
@@ -205,7 +206,7 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                 onTap: widget.onFollowingTap,
                 borderRadius: BorderRadius.circular(10),
                 child: _StatStream(
-                  title: "Following",
+                  title: AppLocalizations.of(context)!.statFollowing,
                   stream: FirebaseFirestore.instance
                       .collection('users')
                       .doc(widget.user.uid)
@@ -244,14 +245,14 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                             ),
                           ],
                         ),
-                        child: const Row(
+                        child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.edit, color: Colors.white, size: 18),
-                            SizedBox(width: 8),
+                            const Icon(Icons.edit, color: Colors.white, size: 18),
+                            const SizedBox(width: 8),
                             Text(
-                              "EDITE PROFIL",
-                              style: TextStyle(
+                              AppLocalizations.of(context)!.editProfileButton,
+                              style: const TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 13,
@@ -321,7 +322,7 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              isFollowing ? "SUIVI" : "SUIVRE",
+                              isFollowing ? AppLocalizations.of(context)!.followedButton : AppLocalizations.of(context)!.followButton,
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
@@ -370,8 +371,8 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                           if (context.mounted) {
                             Navigator.pop(context);
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text("Erè: Enposib pou louvri chat la"),
+                              SnackBar(
+                                content: Text(AppLocalizations.of(context)!.chatOpenError),
                               ),
                             );
                           }
@@ -397,7 +398,7 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              "MESSAGE",
+                              AppLocalizations.of(context)!.messageButton,
                               style: TextStyle(
                                 color: dark
                                     ? Colors.white.withOpacity(0.87)

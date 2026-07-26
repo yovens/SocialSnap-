@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../models/user_model.dart';
+import '../../l10n/app_localizations.dart';
 
 class EditProfilePage extends StatefulWidget {
   final UserModel user;
@@ -105,11 +106,11 @@ Future<void> _saveProfile() async {
     });
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Profil mis à jour")));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.profileUpdated)));
       Navigator.pop(context);
     }
   } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Erè : $e")));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.errorWithDetail(e.toString()))));
   } finally {
     setState(() { _loading = false; });
   }
@@ -123,8 +124,8 @@ Future<void> _saveProfile() async {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          "Modifier Profil",
+        title: Text(
+          AppLocalizations.of(context)!.editProfileTitle,
         ),
         centerTitle: true,
       ),
@@ -206,7 +207,7 @@ Future<void> _saveProfile() async {
               decoration:
                   InputDecoration(
                 labelText:
-                    "Nom complet",
+                    AppLocalizations.of(context)!.fullNameLabel,
                 border:
                     OutlineInputBorder(
                   borderRadius:
@@ -227,7 +228,7 @@ Future<void> _saveProfile() async {
               decoration:
                   InputDecoration(
                 labelText:
-                    "Nom utilisateur",
+                    AppLocalizations.of(context)!.usernameFieldLabel,
                 prefixText: "@",
                 border:
                     OutlineInputBorder(
@@ -249,7 +250,7 @@ Future<void> _saveProfile() async {
               maxLines: 4,
               decoration:
                   InputDecoration(
-                labelText: "Bio",
+                labelText: AppLocalizations.of(context)!.bioLabel,
                 border:
                     OutlineInputBorder(
                   borderRadius:
@@ -292,8 +293,8 @@ Future<void> _saveProfile() async {
                 child:
                     _loading
                         ? const CircularProgressIndicator()
-                        : const Text(
-                            "Enregistrer",
+                        : Text(
+                            AppLocalizations.of(context)!.save,
                             style:
                                 TextStyle(
                               fontSize:

@@ -1,6 +1,5 @@
 {
   "@@locale": "fr",
-
   "loginWelcomeBack": "BON RETOUR PARMI NOUS",
   "emailLabel": "EMAIL",
   "emailHint": "Adresse e-mail",
@@ -17,7 +16,6 @@
   "cancel": "Annuler",
   "send": "Envoyer",
   "resetEmailSent": "E-mail de réinitialisation envoyé ! Vérifiez votre boîte mail.",
-
   "createAccountTitle": "CRÉER UN COMPTE",
   "joinCommunity": "Rejoignez la communauté SocialSnap",
   "usernameLabel": "PSEUDONYME",
@@ -32,10 +30,13 @@
   "accountCreatedVerify": "Compte créé ! Veuillez vérifier votre e-mail avant de vous connecter.",
   "genericErrorWithDetail": "Une erreur est survenue : {error}",
   "@genericErrorWithDetail": {
-    "placeholders": { "error": { "type": "String" } }
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   },
   "alreadyHaveAccount": "Déjà un compte ? Se connecter",
-
   "settingsTitle": "Paramètres",
   "defaultUserName": "Utilisateur",
   "emailVerified": "Email vérifié",
@@ -74,12 +75,122 @@
   "delete": "Supprimer",
   "errorWithDetail": "Erreur : {error}",
   "@errorWithDetail": {
-    "placeholders": { "error": { "type": "String" } }
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   },
-
   "languagePageTitle": "Langue",
   "chooseLanguage": "Choisissez votre langue",
   "french": "Français",
   "haitianCreole": "Kreyòl Ayisyen",
-  "languageChangedRestartHint": "La langue de l'application a été changée."
+  "languageChangedRestartHint": "La langue de l'application a été changée.",
+  "allNotificationsDeleted": "Toutes les notifications ont été supprimées.",
+  "bioLabel": "Bio",
+  "blockUser": "Bloquer l'utilisateur",
+  "blockedUserMessage": "Vous avez bloqué cet utilisateur. Débloquez-le pour pouvoir envoyer des messages.",
+  "cameraButton": "Caméra",
+  "captionHint": "Écrivez une description... utilisez #hashtags",
+  "chatOpenError": "Erreur : impossible d'ouvrir la conversation",
+  "choosePicturesPlaceholder": "Choisir une ou plusieurs images",
+  "contactInfoTitle": "Info du contact",
+  "conversationDeletedSuccess": "Conversation supprimée avec succès",
+  "createPostTitle": "Créer un post",
+  "deleteAllConfirmMessage": "Voulez-vous supprimer toutes les notifications ?",
+  "deleteAllConfirmTitle": "Tout supprimer ?",
+  "deleteChatMessage": "Êtes-vous sûr de vouloir supprimer tous les messages de cette conversation ? Cette action est irréversible.",
+  "deleteChatTitle": "Supprimer la conversation",
+  "deleteConversationConfirmMessage": "Voulez-vous vraiment supprimer cette conversation ? Les messages seront définitivement perdus.",
+  "deletePhotoConfirmMessage": "Voulez-vous vraiment supprimer cette photo ?",
+  "deletePhotoTitle": "Supprimer la photo",
+  "deletePostConfirmMessage": "Voulez-vous supprimer ce post définitivement ?",
+  "deletePostConfirmTitle": "Supprimer ?",
+  "editCaptionTitle": "Modifier la légende",
+  "editProfileButton": "MODIFIER PROFIL",
+  "editProfileTitle": "Modifier Profil",
+  "faqTitle": "FAQ",
+  "faqContent": "❓ Comment changer mon mot de passe ?\n→ Aller dans Paramètres > Sécurité\n\n❓ Comment supprimer mon compte ?\n→ Aller dans Paramètres > Danger\n\n❓ Comment contacter le support ?\n→ Email support@tonapp.com",
+  "followButton": "SUIVRE",
+  "followedButton": "SUIVI",
+  "fullNameLabel": "Nom complet",
+  "galleryButton": "Galerie",
+  "helpPageTitle": "Aide & Support",
+  "imagePickError": "Erreur image : {error}",
+  "@imagePickError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "imageSendError": "Erreur lors de l'envoi de l'image.",
+  "imageUploadFailed": "Envoi de l'image {current}/{total} échoué.",
+  "@imageUploadFailed": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "loadingLabel": "Chargement...",
+  "maxImagesReached": "Maximum {max} images par publication.",
+  "@maxImagesReached": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "mediaAndFiles": "Médias et fichiers",
+  "messageButton": "MESSAGE",
+  "messagesTitle": "Messages",
+  "no": "Non",
+  "noConversationYet": "Aucune conversation pour le moment.",
+  "noNotification": "Aucune notification",
+  "noPostAvailable": "Aucun post disponible",
+  "noPublication": "Aucune publication",
+  "noSharedMedia": "Aucun média partagé pour le moment.",
+  "noUserFound": "Aucun utilisateur trouvé",
+  "notifCommented": "a commenté votre publication.",
+  "notifFollowed": "a commencé à vous suivre.",
+  "notifLiked": "a aimé votre publication.",
+  "notificationsPageTitle": "Notifications",
+  "photoDeleted": "Photo supprimée",
+  "pleaseChooseImage": "Veuillez choisir au moins une image.",
+  "pleaseWriteDescription": "Veuillez écrire une description.",
+  "postPublishedSuccess": "Post publié avec succès 🎉",
+  "postUpdated": "Publication modifiée ✅",
+  "privacyPageTitle": "Confidentialité",
+  "privacyPolicyTitle": "Politique de confidentialité",
+  "privacyPolicyContent": "• Nous respectons vos données personnelles.\n• Aucune information n'est vendue.\n• Vos données sont protégées avec Firebase.\n• Vous pouvez supprimer votre compte à tout moment.",
+  "profileUpdated": "Profil mis à jour",
+  "publicationsLabel": "Publications",
+  "publishButton": "PUBLIER",
+  "replyButton": "Répondre",
+  "save": "Enregistrer",
+  "searchPageTitle": "Recherche",
+  "searchProfileHint": "Rechercher un profil...",
+  "sendingImage": "Envoi de l'image en cours...",
+  "sharedMediaTitle": "Médias partagés",
+  "someoneDefaultName": "Quelqu'un",
+  "sortByPopularity": "Trier par popularité",
+  "sortByRecent": "Trier par date récente",
+  "startConversationHint": "Commencez la conversation...",
+  "statFollowers": "Abonnés",
+  "statFollowing": "Abonnements",
+  "statPosts": "Posts",
+  "storyAdded": "Story ajoutée ✨",
+  "unblockUser": "Débloquer l'utilisateur",
+  "userBlocked": "Utilisateur bloqué.",
+  "userNotConnected": "Utilisateur non connecté.",
+  "userUnblocked": "Utilisateur débloqué.",
+  "usernameFieldLabel": "Nom utilisateur",
+  "usersLabel": "Utilisateurs",
+  "writeMessageHint": "Écrire un message...",
+  "yes": "Oui",
+  "yesDelete": "Oui, supprimer"
 }

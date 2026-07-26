@@ -1,6 +1,5 @@
 {
   "@@locale": "ht",
-
   "loginWelcomeBack": "BYENVENI TOUNEN PARANOU",
   "emailLabel": "EMAIL",
   "emailHint": "Adrès e-mail",
@@ -17,7 +16,6 @@
   "cancel": "Anile",
   "send": "Voye",
   "resetEmailSent": "Nou voye yon e-mail reyinisyalizasyon ! Tcheke bwat mail ou.",
-
   "createAccountTitle": "KREYE YON KONT",
   "joinCommunity": "Antre nan kominote SocialSnap la",
   "usernameLabel": "TIT KOM (PSEYDO)",
@@ -32,10 +30,13 @@
   "accountCreatedVerify": "Kont ou kreye ! Tanpri verifye e-mail ou anvan ou konekte.",
   "genericErrorWithDetail": "Yon erè rive : {error}",
   "@genericErrorWithDetail": {
-    "placeholders": { "error": { "type": "String" } }
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   },
   "alreadyHaveAccount": "Ou gen yon kont deja ? Konekte",
-
   "settingsTitle": "Paramèt",
   "defaultUserName": "Itilizatè",
   "emailVerified": "Email verifye",
@@ -74,12 +75,122 @@
   "delete": "Efase",
   "errorWithDetail": "Erè : {error}",
   "@errorWithDetail": {
-    "placeholders": { "error": { "type": "String" } }
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   },
-
   "languagePageTitle": "Lang",
   "chooseLanguage": "Chwazi lang ou",
   "french": "Fransè",
   "haitianCreole": "Kreyòl Ayisyen",
-  "languageChangedRestartHint": "Lang aplikasyon an chanje."
+  "languageChangedRestartHint": "Lang aplikasyon an chanje.",
+  "allNotificationsDeleted": "Tout notifikasyon yo efase.",
+  "bioLabel": "Byografi",
+  "blockUser": "Bloke itilizatè a",
+  "blockedUserMessage": "Ou bloke itilizatè sa a. Debloke l pou ou ka voye mesaj.",
+  "cameraButton": "Kamera",
+  "captionHint": "Ekri yon deskripsyon... itilize #hashtag",
+  "chatOpenError": "Erè: Enposib pou louvri chat la",
+  "choosePicturesPlaceholder": "Chwazi youn oswa plizyè imaj",
+  "contactInfoTitle": "Enfo kontak la",
+  "conversationDeletedSuccess": "Konvèsasyon efase avèk siksè",
+  "createPostTitle": "Kreye yon pòs",
+  "deleteAllConfirmMessage": "Ou vle efase tout notifikasyon yo?",
+  "deleteAllConfirmTitle": "Efase tout?",
+  "deleteChatMessage": "Ou sèten ou vle efase tout mesaj nan konvèsasyon sa a? Aksyon sa a pa ka anile.",
+  "deleteChatTitle": "Efase konvèsasyon an",
+  "deleteConversationConfirmMessage": "Ou vrèman vle efase konvèsasyon sa a? Mesaj yo ap pèdi pou tout tan.",
+  "deletePhotoConfirmMessage": "Ou vrèman vle efase foto sa a?",
+  "deletePhotoTitle": "Efase foto a",
+  "deletePostConfirmMessage": "Ou vle efase pòs sa a pou tout tan?",
+  "deletePostConfirmTitle": "Efase?",
+  "editCaptionTitle": "Modifye lejand la",
+  "editProfileButton": "MODIFYE PWOFIL",
+  "editProfileTitle": "Modifye Pwofil",
+  "faqTitle": "FAQ",
+  "faqContent": "❓ Kijan pou m chanje mo de pas mwen?\n→ Ale nan Paramèt > Sekirite\n\n❓ Kijan pou m efase kont mwen?\n→ Ale nan Paramèt > Danje\n\n❓ Kijan pou m kontakte sipò?\n→ Imèl support@tonapp.com",
+  "followButton": "SWIV",
+  "followedButton": "SWIVI",
+  "fullNameLabel": "Non konplè",
+  "galleryButton": "Galri",
+  "helpPageTitle": "Èd & Sipò",
+  "imagePickError": "Erè imaj : {error}",
+  "@imagePickError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "imageSendError": "Erè pandan n ap voye imaj la.",
+  "imageUploadFailed": "Voye imaj {current}/{total} echwe.",
+  "@imageUploadFailed": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "loadingLabel": "N ap chaje...",
+  "maxImagesReached": "Maksimòm {max} imaj pou yon pòs.",
+  "@maxImagesReached": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "mediaAndFiles": "Medya ak fichye",
+  "messageButton": "MESAJ",
+  "messagesTitle": "Mesaj",
+  "no": "Non",
+  "noConversationYet": "Poko gen konvèsasyon.",
+  "noNotification": "Pa gen notifikasyon",
+  "noPostAvailable": "Pa gen pòs disponib",
+  "noPublication": "Pa gen piblikasyon",
+  "noSharedMedia": "Pa gen medya pataje pou kounye a.",
+  "noUserFound": "Pa jwenn itilizatè",
+  "notifCommented": "kòmante piblikasyon ou.",
+  "notifFollowed": "kòmanse swiv ou.",
+  "notifLiked": "renmen piblikasyon ou.",
+  "notificationsPageTitle": "Notifikasyon",
+  "photoDeleted": "Foto efase",
+  "pleaseChooseImage": "Tanpri chwazi omwen yon imaj.",
+  "pleaseWriteDescription": "Tanpri ekri yon deskripsyon.",
+  "postPublishedSuccess": "Pòs pibliye avèk siksè 🎉",
+  "postUpdated": "Piblikasyon modifye ✅",
+  "privacyPageTitle": "Konfidansyalite",
+  "privacyPolicyTitle": "Règleman konfidansyalite",
+  "privacyPolicyContent": "• Nou respekte done pèsonèl ou yo.\n• Nou pa vann okenn enfòmasyon.\n• Done ou yo pwoteje ak Firebase.\n• Ou ka efase kont ou nenpòt kilè.",
+  "profileUpdated": "Pwofil mete ajou",
+  "publicationsLabel": "Piblikasyon",
+  "publishButton": "PIBLIYE",
+  "replyButton": "Reponn",
+  "save": "Anrejistre",
+  "searchPageTitle": "Rechèch",
+  "searchProfileHint": "Chèche yon pwofil...",
+  "sendingImage": "N ap voye imaj la...",
+  "sharedMediaTitle": "Medya pataje",
+  "someoneDefaultName": "Yon moun",
+  "sortByPopularity": "Triye pa popilarite",
+  "sortByRecent": "Triye pa dat resan",
+  "startConversationHint": "Kòmanse konvèsasyon an...",
+  "statFollowers": "Swivè",
+  "statFollowing": "N ap Swiv",
+  "statPosts": "Pòs",
+  "storyAdded": "Istwa ajoute ✨",
+  "unblockUser": "Debloke itilizatè a",
+  "userBlocked": "Itilizatè bloke.",
+  "userNotConnected": "Itilizatè pa konekte.",
+  "userUnblocked": "Itilizatè debloke.",
+  "usernameFieldLabel": "Non itilizatè",
+  "usersLabel": "Itilizatè",
+  "writeMessageHint": "Ekri yon mesaj...",
+  "yes": "Wi",
+  "yesDelete": "Wi, efase"
 }
