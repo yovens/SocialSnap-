@@ -21,6 +21,7 @@ import '../../services/firestore_service.dart';
 import '../../services/imgbb_service.dart';
 
 import '../notifications/notifications_page.dart';
+import '../../l10n/app_localizations.dart';
 
 class FeedPage extends StatefulWidget {
   const FeedPage({super.key});
@@ -49,7 +50,7 @@ class _FeedPageState extends State<FeedPage> {
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Story ajoutée ✨")),
+            SnackBar(content: Text(AppLocalizations.of(context)!.storyAdded)),
           );
         }
       }
@@ -280,7 +281,7 @@ const SizedBox(height: 10),
                       if (posts.isEmpty) {
                         return Center(
                           child: Text(
-                            "Aucun post disponible",
+                            AppLocalizations.of(context)!.noPostAvailable,
                             style: TextStyle(color: textColor),
                           ),
                         );

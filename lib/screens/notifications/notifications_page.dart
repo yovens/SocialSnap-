@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
 
 class NotificationsPage extends StatefulWidget {
   const NotificationsPage({super.key});
@@ -26,7 +27,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Toutes les notifications ont été supprimées.")),
+        SnackBar(content: Text(AppLocalizations.of(context)!.allNotificationsDeleted)),
       );
     }
   }
@@ -37,7 +38,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Notifications", style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(AppLocalizations.of(context)!.notificationsPageTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
         actions: [
           IconButton(
@@ -46,11 +47,11 @@ class _NotificationsPageState extends State<NotificationsPage> {
               bool confirm = await showDialog(
                     context: context,
                     builder: (context) => AlertDialog(
-                      title: const Text("Tout supprimer ?"),
-                      content: const Text("Voulez-vous supprimer toutes les notifications ?"),
+                      title: Text(AppLocalizations.of(context)!.deleteAllConfirmTitle),
+                      content: Text(AppLocalizations.of(context)!.deleteAllConfirmMessage),
                       actions: [
-                        TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("Non")),
-                        TextButton(onPressed: () => Navigator.pop(context, true), child: const Text("Oui")),
+                        TextButton(onPressed: () => Navigator.pop(context, false), child: Text(AppLocalizations.of(context)!.no)),
+                        TextButton(onPressed: () => Navigator.pop(context, true), child: Text(AppLocalizations.of(context)!.yes)),
                       ],
                     ),
                   ) ??
@@ -77,7 +78,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
           _currentDocs = snapshot.data!.docs;
 
           if (_currentDocs.isEmpty) {
-            return const Center(child: Text("Aucune notification"));
+            return Center(child: Text(AppLocalizations.of(context)!.noNotification));
           }
 
           return ListView.builder(
@@ -87,7 +88,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
               final data = _currentDocs[index].data() as Map<String, dynamic>;
               
               // Nou rale enfòmasyon moun ki fè aksyon an nan dokiman an
-              final senderName = data['senderName'] ?? "Quelqu'un";
+              final senderName = data['senderName'] ?? AppLocalizations.of(context)!.someoneDefaultName;
               final senderPhoto = data['senderProfileImageUrl'] ?? "";
               final type = data['type'] ?? "like";
 
@@ -168,7 +169,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                         text: "$senderName ", // Non moun lan an fonse
                                         style: const TextStyle(fontWeight: FontWeight.bold),
                                       ),
-                                      TextSpan(text: _getNotificationText(type)),
+                                      TextSpan(text: _getNotificationText(context, type)),
                                     ],
                                   ),
                                 ),
@@ -208,9 +209,10 @@ class _NotificationsPageState extends State<NotificationsPage> {
     return Colors.purpleAccent;
   }
 
-  String _getNotificationText(String type) {
-    if (type == "like") return "a aimé votre publication.";
-    if (type == "comment") return "a commenté votre publication.";
-    return "a commencé à vous suivre.";
+  String _getNotificationText(BuildContext context, String type) {
+    final l10n = AppLocalizations.of(context)!;
+    if (type == "like") return l10n.notifLiked;
+    if (type == "comment") return l10n.notifCommented;
+    return l10n.notifFollowed;
   }
 }

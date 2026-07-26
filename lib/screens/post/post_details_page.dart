@@ -6,6 +6,7 @@ import 'package:photo_view/photo_view_gallery.dart';
 
 import '../../models/post_model.dart';
 import '../../services/firestore_service.dart';
+import '../../l10n/app_localizations.dart';
 
 class PostDetailsPage extends StatefulWidget {
   final PostModel post;
@@ -63,24 +64,24 @@ class _PostDetailsPageState extends State<PostDetailsPage> {
       context: context,
       builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text("Modifier la légende"),
+        title: Text(AppLocalizations.of(context)!.editCaptionTitle),
         content: TextField(
           controller: editCtrl,
           maxLines: 4,
           autofocus: true,
-          decoration: const InputDecoration(
-            hintText: "Écrivez une description... utilisez #hashtags",
-            border: OutlineInputBorder(),
+          decoration: InputDecoration(
+            hintText: AppLocalizations.of(context)!.captionHint,
+            border: const OutlineInputBorder(),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text("Annuler"),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(dialogContext, editCtrl.text.trim()),
-            child: const Text("Enregistrer"),
+            child: Text(AppLocalizations.of(context)!.save),
           ),
         ],
       ),
@@ -104,12 +105,12 @@ class _PostDetailsPageState extends State<PostDetailsPage> {
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Publication modifiée ✅")),
+        SnackBar(content: Text(AppLocalizations.of(context)!.postUpdated)),
       );
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Erreur : $e")),
+        SnackBar(content: Text(AppLocalizations.of(context)!.errorWithDetail(e.toString()))),
       );
     }
   }
@@ -254,7 +255,7 @@ if (currentUid.isNotEmpty) {
                           _commentCtrl.text = "@${data['username']} ";
                         });
                       },
-                      child: const Text("Répondre"),
+                      child: Text(AppLocalizations.of(context)!.replyButton),
                     ),
 
                     if (data['uid'] == currentUser?.uid)
@@ -306,11 +307,11 @@ if (currentUid.isNotEmpty) {
                 bool? confirm = await showDialog(
                   context: context,
                   builder: (context) => AlertDialog(
-                    title: const Text("Supprimer ?"),
-                    content: const Text("Voulez-vous supprimer ce post définitivement ?"),
+                    title: Text(AppLocalizations.of(context)!.deletePostConfirmTitle),
+                    content: Text(AppLocalizations.of(context)!.deletePostConfirmMessage),
                     actions: [
-                      TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("Non")),
-                      TextButton(onPressed: () => Navigator.pop(context, true), child: const Text("Oui")),
+                      TextButton(onPressed: () => Navigator.pop(context, false), child: Text(AppLocalizations.of(context)!.no)),
+                      TextButton(onPressed: () => Navigator.pop(context, true), child: Text(AppLocalizations.of(context)!.yes)),
                     ],
                   ),
                 );
