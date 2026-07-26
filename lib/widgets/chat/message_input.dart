@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
 
 class MessageInput extends StatelessWidget {
   final TextEditingController controller;
@@ -66,9 +67,9 @@ class MessageInput extends StatelessWidget {
                     color: isDarkMode ? Colors.white : Colors.black87,
                     fontSize: 15,
                   ),
-                  decoration: const InputDecoration(
-                    hintText: "Écrire un message...",
-                    hintStyle: TextStyle(color: Colors.grey, fontSize: 15),
+                  decoration: InputDecoration(
+                    hintText: AppLocalizations.of(context)!.writeMessageHint,
+                    hintStyle: const TextStyle(color: Colors.grey, fontSize: 15),
                     border: InputBorder.none,
                     isDense: true,
                     contentPadding: EdgeInsets.zero,

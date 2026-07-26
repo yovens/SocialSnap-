@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../providers/chat_provider.dart';
 import '../../widgets/chat/chat_tile.dart';
 import 'chat_page.dart';
+import '../../l10n/app_localizations.dart';
 
 class ChatsPage extends StatefulWidget {
   const ChatsPage({super.key});
@@ -56,7 +57,7 @@ class _ChatsPageState extends State<ChatsPage> {
               ),
               const SizedBox(height: 4),
               Text(
-                "Messages",
+                AppLocalizations.of(context)!.messagesTitle,
                 style: TextStyle(
                   color: isDarkMode ? Colors.white : Colors.black87,
                   fontWeight: FontWeight.bold,
@@ -77,7 +78,7 @@ class _ChatsPageState extends State<ChatsPage> {
           : provider.chats.isEmpty
               ? Center(
                   child: Text(
-                    "Aucune conversation pour le moment.",
+                    AppLocalizations.of(context)!.noConversationYet,
                     style: TextStyle(
                       color: isDarkMode ? Colors.grey[600] : Colors.grey,
                       fontSize: 16,
@@ -128,7 +129,7 @@ class _ChatsPageState extends State<ChatsPage> {
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                                 title: Text(
-                                  "Supprimer la conversation",
+                                  AppLocalizations.of(context)!.deleteChatTitle,
                                   style: TextStyle(
                                     color: isDarkMode
                                         ? Colors.white
@@ -137,7 +138,7 @@ class _ChatsPageState extends State<ChatsPage> {
                                   ),
                                 ),
                                 content: Text(
-                                  "Voulez-vous vraiment supprimer cette conversation ? Les messages seront définitivement perdus.",
+                                  AppLocalizations.of(context)!.deleteConversationConfirmMessage,
                                   style: TextStyle(
                                     color: isDarkMode
                                         ? Colors.white70
@@ -148,13 +149,13 @@ class _ChatsPageState extends State<ChatsPage> {
                                   TextButton(
                                     onPressed: () =>
                                         Navigator.of(context).pop(false),
-                                    child: const Text("Non"),
+                                    child: Text(AppLocalizations.of(context)!.no),
                                   ),
                                   TextButton(
                                     onPressed: () =>
                                         Navigator.of(context).pop(true),
-                                    child: const Text(
-                                      "Oui, supprimer",
+                                    child: Text(
+                                      AppLocalizations.of(context)!.yesDelete,
                                       style: TextStyle(
                                         color: Colors.redAccent,
                                         fontWeight: FontWeight.bold,
@@ -175,9 +176,9 @@ class _ChatsPageState extends State<ChatsPage> {
 
                           if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
+                              SnackBar(
                                 content: Text(
-                                  "Conversation supprimée avec succès",
+                                  AppLocalizations.of(context)!.conversationDeletedSuccess,
                                 ),
                                 backgroundColor: Colors.cyan,
                               ),

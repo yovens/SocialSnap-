@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../profile/profile_page.dart'; // 🟢 Enpòte paj profil la
 import '../post/post_details_page.dart'; // 🟢 Enpòte paj detay post la
 import '../../models/post_model.dart';
+import '../../l10n/app_localizations.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -140,7 +141,7 @@ class _SearchPageState extends State<SearchPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Recherche",
+                        AppLocalizations.of(context)!.searchPageTitle,
                         style: TextStyle(
                           fontSize: 32,
                           fontWeight: FontWeight.bold,
@@ -156,7 +157,7 @@ class _SearchPageState extends State<SearchPage> {
                             controller: _searchController,
                             onChanged: _searchProfile,
                             decoration: InputDecoration(
-                              hintText: "Rechercher un profil...",
+                              hintText: AppLocalizations.of(context)!.searchProfileHint,
                               hintStyle: TextStyle(color: isDark ? Colors.white60 : Colors.black45, fontSize: 14),
                               prefixIcon: Icon(Icons.search_rounded, color: isDark ? Colors.white70 : Colors.black54),
                               filled: true,
@@ -215,8 +216,8 @@ class _SearchPageState extends State<SearchPage> {
                               )
                             : IconButton(
                                 tooltip: _sortByPopularity
-                                    ? "Trier par date récente"
-                                    : "Trier par popularité",
+                                    ? AppLocalizations.of(context)!.sortByRecent
+                                    : AppLocalizations.of(context)!.sortByPopularity,
                                 icon: Icon(
                                   _sortByPopularity ? Icons.local_fire_department : Icons.schedule,
                                   color: _sortByPopularity
@@ -256,7 +257,7 @@ class _SearchPageState extends State<SearchPage> {
       return SliverList(
         delegate: SliverChildListDelegate([
           if (_filteredUsers.isNotEmpty) ...[
-            const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Text("Utilisateurs", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16))),
+            Padding(padding: const EdgeInsets.symmetric(vertical: 8), child: Text(AppLocalizations.of(context)!.usersLabel, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16))),
             SizedBox(
               height: 110,
               child: ListView.builder(
@@ -269,7 +270,7 @@ class _SearchPageState extends State<SearchPage> {
             ),
             const SizedBox(height: 16),
           ],
-          const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Text("Publications", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16))),
+          Padding(padding: const EdgeInsets.symmetric(vertical: 8), child: Text(AppLocalizations.of(context)!.publicationsLabel, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16))),
           GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -285,7 +286,7 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   Widget _buildUsersGrid(bool isDark, List<DocumentSnapshot> usersList) {
-    if (usersList.isEmpty) return const SliverFillRemaining(child: Center(child: Text("Aucun utilisateur trouvé")));
+    if (usersList.isEmpty) return SliverFillRemaining(child: Center(child: Text(AppLocalizations.of(context)!.noUserFound)));
     return SliverGrid(
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, mainAxisSpacing: 12, crossAxisSpacing: 12, childAspectRatio: 0.85),
       delegate: SliverChildBuilderDelegate(
@@ -296,7 +297,7 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   Widget _buildPostsGrid(bool isDark, List<DocumentSnapshot> postsList) {
-    if (postsList.isEmpty) return const SliverFillRemaining(child: Center(child: Text("Aucune publication")));
+    if (postsList.isEmpty) return SliverFillRemaining(child: Center(child: Text(AppLocalizations.of(context)!.noPublication)));
     return SliverGrid(
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, mainAxisSpacing: 12, crossAxisSpacing: 12, childAspectRatio: 0.85),
       delegate: SliverChildBuilderDelegate(

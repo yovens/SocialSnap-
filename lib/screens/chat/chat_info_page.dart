@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../models/user_model.dart';
 import 'media_gallery_page.dart';
+import '../../l10n/app_localizations.dart';
 
 class ChatInfoPage extends StatefulWidget {
   final UserModel user;
@@ -64,7 +65,7 @@ class _ChatInfoPageState extends State<ChatInfoPage> {
       });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Utilisateur débloqué.")),
+          SnackBar(content: Text(AppLocalizations.of(context)!.userUnblocked)),
         );
       }
     } else {
@@ -77,7 +78,7 @@ class _ChatInfoPageState extends State<ChatInfoPage> {
       });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Utilisateur bloqué.")),
+          SnackBar(content: Text(AppLocalizations.of(context)!.userBlocked)),
         );
       }
     }
@@ -88,20 +89,18 @@ class _ChatInfoPageState extends State<ChatInfoPage> {
     final bool? confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text("Supprimer la conversation"),
-        content: const Text(
-          "Êtes-vous sûr de vouloir supprimer tous les messages de cette conversation ? Cette action est irréversible.",
-        ),
+        title: Text(AppLocalizations.of(context)!.deleteChatTitle),
+        content: Text(AppLocalizations.of(context)!.deleteChatMessage),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text("Annuler"),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text(
-              "Supprimer",
-              style: TextStyle(color: Colors.red),
+            child: Text(
+              AppLocalizations.of(context)!.delete,
+              style: const TextStyle(color: Colors.red),
             ),
           ),
         ],
@@ -139,7 +138,7 @@ class _ChatInfoPageState extends State<ChatInfoPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Info du contact"),
+        title: Text(AppLocalizations.of(context)!.contactInfoTitle),
         centerTitle: true,
       ),
       body: isLoading
@@ -184,7 +183,7 @@ class _ChatInfoPageState extends State<ChatInfoPage> {
                   // Option Médias
                   ListTile(
                     leading: const Icon(Icons.image),
-                    title: const Text("Médias et fichiers"),
+                    title: Text(AppLocalizations.of(context)!.mediaAndFiles),
                     trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                     onTap: () {
                       Navigator.push(
@@ -206,8 +205,8 @@ class _ChatInfoPageState extends State<ChatInfoPage> {
                     ),
                     title: Text(
                       isBlocked
-                          ? "Débloquer l'utilisateur"
-                          : "Bloquer l'utilisateur",
+                          ? AppLocalizations.of(context)!.unblockUser
+                          : AppLocalizations.of(context)!.blockUser,
                     ),
                     onTap: _toggleBlockUser,
                   ),
@@ -215,9 +214,9 @@ class _ChatInfoPageState extends State<ChatInfoPage> {
                   // Option Supprimer
                   ListTile(
                     leading: const Icon(Icons.delete, color: Colors.red),
-                    title: const Text(
-                      "Supprimer la conversation",
-                      style: TextStyle(color: Colors.red),
+                    title: Text(
+                      AppLocalizations.of(context)!.deleteChatTitle,
+                      style: const TextStyle(color: Colors.red),
                     ),
                     onTap: _deleteChat,
                   ),

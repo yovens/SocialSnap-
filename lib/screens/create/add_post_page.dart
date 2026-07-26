@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../models/post_model.dart';
 import '../../services/imgbb_service.dart';
+import '../../l10n/app_localizations.dart';
 
 /// 🟢 Kantite maksimòm imaj yon moun ka mete sou yon sèl pòs.
 const int _kMaxImages = 10;
@@ -62,7 +63,7 @@ class _AddPostPageState extends State<AddPostPage> {
         _addImages([File(pickedFile.path)]);
       }
     } catch (e) {
-      _showSnack("Erreur image : $e");
+      _showSnack(AppLocalizations.of(context)!.imagePickError(e.toString()));
     }
   }
 
@@ -77,7 +78,7 @@ class _AddPostPageState extends State<AddPostPage> {
         _addImages(pickedFiles.map((x) => File(x.path)).toList());
       }
     } catch (e) {
-      _showSnack("Erreur image : $e");
+      _showSnack(AppLocalizations.of(context)!.imagePickError(e.toString()));
     }
   }
 
@@ -86,7 +87,7 @@ class _AddPostPageState extends State<AddPostPage> {
       _selectedImages.addAll(newFiles);
       if (_selectedImages.length > _kMaxImages) {
         _selectedImages.removeRange(_kMaxImages, _selectedImages.length);
-        _showSnack("Maksimòm $_kMaxImages imaj pou yon pòs.");
+        _showSnack(AppLocalizations.of(context)!.maxImagesReached(_kMaxImages));
       }
     });
   }
@@ -113,12 +114,12 @@ class _AddPostPageState extends State<AddPostPage> {
 
   Future<void> _submitPost() async {
     if (_selectedImages.isEmpty) {
-      _showSnack("Veuillez choisir au moins une image.");
+      _showSnack(AppLocalizations.of(context)!.pleaseChooseImage);
       return;
     }
 
     if (_captionController.text.trim().isEmpty) {
-      _showSnack("Veuillez écrire une description.");
+      _showSnack(AppLocalizations.of(context)!.pleaseWriteDescription);
       return;
     }
 
@@ -131,7 +132,7 @@ class _AddPostPageState extends State<AddPostPage> {
       final currentUser = FirebaseAuth.instance.currentUser;
 
       if (currentUser == null) {
-        throw Exception("Utilisateur non connecté.");
+        throw Exception(AppLocalizations.of(context)!.userNotConnected);
       }
 
       // ───── Upload chak imaj sou ImgBB, ak pwogresyon total ─────
@@ -152,7 +153,7 @@ class _AddPostPageState extends State<AddPostPage> {
         );
 
         if (url == null) {
-          throw Exception("Upload image ${i + 1}/$totalImages échoué.");
+          throw Exception(AppLocalizations.of(context)!.imageUploadFailed(i + 1, totalImages));
         }
 
         imageUrls.add(url);
@@ -167,7 +168,7 @@ class _AddPostPageState extends State<AddPostPage> {
       final userData = userDoc.data() ?? {};
 
       final username =
-          userData['username'] ?? currentUser.displayName ?? "Utilisateur";
+          userData['username'] ?? currentUser.displayName ?? AppLocalizations.of(context)!.defaultUserName;
 
       final caption = _captionController.text.trim();
 
@@ -185,11 +186,11 @@ class _AddPostPageState extends State<AddPostPage> {
       await FirebaseFirestore.instance.collection('posts').add(post.toMap());
 
       if (mounted) {
-        _showSnack("Post publié avec succès 🎉");
+        _showSnack(AppLocalizations.of(context)!.postPublishedSuccess);
         Navigator.pop(context);
       }
     } catch (e) {
-      _showSnack("Erreur : $e");
+      _showSnack(AppLocalizations.of(context)!.errorWithDetail(e.toString()));
     }
 
     if (mounted) {
@@ -235,7 +236,7 @@ class _AddPostPageState extends State<AddPostPage> {
                         ),
                       ),
                       Text(
-                        "Créer un post",
+                        AppLocalizations.of(context)!.createPostTitle,
                         style: TextStyle(
                           color: isDark ? Colors.white : Colors.black,
                           fontWeight: FontWeight.bold,
@@ -287,7 +288,7 @@ class _AddPostPageState extends State<AddPostPage> {
                                   ),
                                   const SizedBox(height: 10),
                                   Text(
-                                    "Choisir une ou plusieurs images",
+                                    AppLocalizations.of(context)!.choosePicturesPlaceholder,
                                     style: TextStyle(
                                       color: isDark ? Colors.grey : Colors.black54,
                                     ),
@@ -377,7 +378,7 @@ class _AddPostPageState extends State<AddPostPage> {
                         style: TextStyle(color: isDark ? Colors.white : Colors.black),
                         onChanged: (_) => setState(() {}),
                         decoration: InputDecoration(
-                          hintText: "Écrivez une description... utilisez #hashtags",
+                          hintText: AppLocalizations.of(context)!.captionHint,
                           hintStyle: TextStyle(
                             color: isDark ? Colors.grey : Colors.black54,
                           ),
@@ -417,7 +418,7 @@ class _AddPostPageState extends State<AddPostPage> {
                         Expanded(
                           child: _ActionButton(
                             icon: Icons.photo_library,
-                            title: "Galerie",
+                            title: AppLocalizations.of(context)!.galleryButton,
                             color: Colors.orange,
                             bgColor: isDark
                                 ? const Color(0xFF252525)
@@ -429,7 +430,7 @@ class _AddPostPageState extends State<AddPostPage> {
                         Expanded(
                           child: _ActionButton(
                             icon: Icons.camera,
-                            title: "Caméra",
+                            title: AppLocalizations.of(context)!.cameraButton,
                             color: Colors.blue,
                             bgColor: isDark ? const Color(0xFF252525) : Colors.white,
                             onTap: () => _pickSingleImage(ImageSource.camera),
@@ -494,9 +495,9 @@ class _AddPostPageState extends State<AddPostPage> {
                                   color: Colors.white,
                                 ),
                               )
-                            : const Text(
-                                "PUBLIER",
-                                style: TextStyle(
+                            : Text(
+                                AppLocalizations.of(context)!.publishButton,
+                                style: const TextStyle(
                                   fontWeight: FontWeight.bold,
                                   letterSpacing: 1,
                                 ),

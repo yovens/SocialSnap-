@@ -1,32 +1,30 @@
 import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
 
 class PrivacyPage extends StatelessWidget {
   const PrivacyPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Confidentialité"),
+        title: Text(l10n.privacyPageTitle),
         centerTitle: true,
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
-        children: const [
+        children: [
 
           Text(
-            "Politique de confidentialité",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            l10n.privacyPolicyTitle,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
 
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
 
-          Text(
-            "• Nous respectons vos données personnelles.\n"
-            "• Aucune information n'est vendue.\n"
-            "• Vos données sont protégées avec Firebase.\n"
-            "• Vous pouvez supprimer votre compte à tout moment.",
-          ),
+          Text(l10n.privacyPolicyContent),
         ],
       ),
     );

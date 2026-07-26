@@ -12,6 +12,7 @@ import '../../widgets/chat/message_bubble.dart';
 import '../../widgets/chat/message_input.dart';
 import '../../models/user_model.dart'; // 💡 Assure-toi d'avoir le bon chemin vers UserModel
 import 'chat_info_page.dart'; // 💡 Import de la page ChatInfoPage
+import '../../l10n/app_localizations.dart';
 
 class ChatPage extends StatefulWidget {
   final String chatId;
@@ -128,7 +129,7 @@ class _ChatPageState extends State<ChatPage> {
               .snapshots(),
 
           builder: (context, snapshot) {
-            String nom = "Chargement...";
+            String nom = AppLocalizations.of(context)!.loadingLabel;
             String photo = "";
             bool enLigne = false;
             UserModel? targetUser;
@@ -141,7 +142,7 @@ class _ChatPageState extends State<ChatPage> {
 
               nom = data['username'] ??
                   data['displayName'] ??
-                  "Utilisateur";
+                  AppLocalizations.of(context)!.defaultUserName;
 
               photo = data['profileImageUrl'] ?? "";
               enLigne = data['isOnline'] ?? false;
@@ -270,10 +271,10 @@ Navigator.push(
           // ================= MESSAGES =================
           Expanded(
             child: provider.messages.isEmpty
-                ? const Center(
+                ? Center(
                     child: Text(
-                      "Commencez la conversation...",
-                      style: TextStyle(color: Colors.grey),
+                      AppLocalizations.of(context)!.startConversationHint,
+                      style: const TextStyle(color: Colors.grey),
                     ),
                   )
                 : ListView.builder(
@@ -313,8 +314,8 @@ StreamBuilder<DocumentSnapshot>(
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
         color: isDarkMode ? Colors.grey[900] : Colors.grey[200],
         width: double.infinity,
-        child: const Text(
-          "Vous avez bloqué cet utilisateur. Débloquez-le pour pouvoir envoyer des messages.",
+        child: Text(
+          AppLocalizations.of(context)!.blockedUserMessage,
           textAlign: TextAlign.center,
           style: TextStyle(
             color: Colors.redAccent,
@@ -348,10 +349,10 @@ StreamBuilder<DocumentSnapshot>(
   if (image != null && mounted) {
     // 1. Afiche yon ti loading nan SnackBar
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Envoi de l'image en cours..."),
+      SnackBar(
+        content: Text(AppLocalizations.of(context)!.sendingImage),
         backgroundColor: Colors.orange,
-        duration: Duration(seconds: 2),
+        duration: const Duration(seconds: 2),
       ),
     );
 
@@ -369,8 +370,8 @@ StreamBuilder<DocumentSnapshot>(
       );
     } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Erreur lors de l'envoi de l'image."),
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.imageSendError),
           backgroundColor: Colors.red,
         ),
       );
