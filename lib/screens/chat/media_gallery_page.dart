@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
 
 class MediaGalleryPage extends StatelessWidget {
   final String chatId;
@@ -13,7 +14,7 @@ class MediaGalleryPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Médias partagés"),
+        title: Text(AppLocalizations.of(context)!.sharedMediaTitle),
       ),
       body: StreamBuilder<QuerySnapshot>(
         // Nou koute tout mesaj ki nan chat la
@@ -30,13 +31,13 @@ class MediaGalleryPage extends StatelessWidget {
 
           if (snapshot.hasError) {
             return Center(
-              child: Text("Erreur: ${snapshot.error}"),
+              child: Text(AppLocalizations.of(context)!.errorWithDetail(snapshot.error.toString())),
             );
           }
 
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(
-              child: Text("Aucun média partagé pou le moment."),
+            return Center(
+              child: Text(AppLocalizations.of(context)!.noSharedMedia),
             );
           }
 
@@ -49,8 +50,8 @@ class MediaGalleryPage extends StatelessWidget {
           }).toList();
 
           if (mediaDocs.isEmpty) {
-            return const Center(
-              child: Text("Aucun média partagé pour le moment."),
+            return Center(
+              child: Text(AppLocalizations.of(context)!.noSharedMedia),
             );
           }
 
@@ -152,16 +153,16 @@ class _FullscreenMediaViewerState extends State<FullscreenMediaViewer> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text("Supprimer la photo"),
-        content: const Text("Voulez-vous vraiment supprimer cette photo ?"),
+        title: Text(AppLocalizations.of(context)!.deletePhotoTitle),
+        content: Text(AppLocalizations.of(context)!.deletePhotoConfirmMessage),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text("Annuler"),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text("Supprimer", style: TextStyle(color: Colors.red)),
+            child: Text(AppLocalizations.of(context)!.delete, style: const TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -178,7 +179,7 @@ class _FullscreenMediaViewerState extends State<FullscreenMediaViewer> {
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Photo supprimée")),
+            SnackBar(content: Text(AppLocalizations.of(context)!.photoDeleted)),
           );
           Navigator.pop(context); // Tounen nan galri a
         }
